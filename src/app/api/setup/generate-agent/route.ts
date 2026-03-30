@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
+import type { ConversationMessage } from '@/types'
+
+const SYSTEM = `You are an AI system prompt designer. When given a description of what an agent should do, return ONLY a JSON object with exactly these three keys: role, goals, constraints. No markdown fences, no explanation, just raw JSON.
+
+Example output:
+{"role":"Strategic competitive intelligence analyst for B2B SaaS companies","goals":"Deliver concise, interview-ready competitive briefings; prioritize recent market movements; connect findings to the candidate's target role","constraints":"No fabricated statistics; responses under 600 words unless asked; no legal or financial advice"}`
+
+export async function POST(req: NextRequest) {
+  const { description, conversation }: {
+    description: string
+    conversation: ConversationMessage[]
+  } = await req.json()
+
+  if (!description) {
+    return NextResponse.json({ error: 'description is required' }, { status: 400 })
+  }
+
+  try {
+    const client = new Anthropic()
+    const messages: Anthropic.MessageParam[] = [
+      ...conversation.map(m => ({ role: m.role, content: m.content })),
+      { role: 'user', content: description }
+    ]
+
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 800,
+      system: SYSTEM,
+      messages,
+    })
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '{}'
+    // Strip markdown fences if Claude added them despite instructions
+    const cleaned = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
+    const parsed = JSON.parse(cleaned)
+    return NextResponse.json(parsed)
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Generation failed'
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
