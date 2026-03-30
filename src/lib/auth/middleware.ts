@@ -5,6 +5,14 @@ import { getRequestSession } from './session'
 export async function applyMiddleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl
 
+  // Rule 0: If Supabase is not configured, send to env setup
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    if (!pathname.startsWith('/setup/env') && !pathname.startsWith('/api/setup/')) {
+      return NextResponse.redirect(new URL('/setup/env', req.url))
+    }
+    return NextResponse.next()
+  }
+
   // Rule 1: Public paths — unconditional allow
   if (
     pathname === '/login' ||
