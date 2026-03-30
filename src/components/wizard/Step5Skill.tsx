@@ -71,11 +71,14 @@ export function Step5Skill({ onFinish }: Step5SkillProps) {
       // 2. Link skill to agent if one was created
       const agentSlug = sessionStorage.getItem('wizard_agent_slug')
       if (agentSlug) {
-        await fetch(`/api/agents/${agentSlug}`, {
+        const agentRes = await fetch(`/api/agents/${agentSlug}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ skill_slugs: [newSkillSlug] }),
         })
+        if (!agentRes.ok) {
+          console.warn('Failed to link skill to agent — continuing setup')
+        }
       }
 
       // 3. Seed default data
@@ -90,7 +93,11 @@ export function Step5Skill({ onFinish }: Step5SkillProps) {
   }
 
   async function skip() {
-    await onFinish()
+    try {
+      await onFinish()
+    } catch {
+      // navigation failure — ignore silently (router handles its own errors)
+    }
   }
 
   return (
