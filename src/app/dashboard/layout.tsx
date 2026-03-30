@@ -10,7 +10,8 @@ async function getUserName(): Promise<string> {
       .eq('key', 'user_name')
       .single()
     return data?.value || 'Your'
-  } catch {
+  } catch (error) {
+    console.warn('[DashboardLayout] getUserName failed:', error)
     return 'Your'
   }
 }
