@@ -69,5 +69,5 @@ export interface Skill {
 export interface PlanStep {
   title: string
   description: string
-  executor_type: string
+  executor_type: ExecutorType
 }
