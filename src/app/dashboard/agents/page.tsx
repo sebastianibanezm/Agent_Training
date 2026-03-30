@@ -31,8 +31,12 @@ export default function AgentsPage() {
             agent={agent}
             onEdit={() => setEditing(agent)}
             onDelete={async () => {
-              await fetch(`/api/agents/${agent.slug}`, { method: 'DELETE' })
-              setAgents(prev => prev.filter(a => a.id !== agent.id))
+              const res = await fetch(`/api/agents/${agent.slug}`, { method: 'DELETE' })
+              if (res.ok) {
+                setAgents(prev => prev.filter(a => a.id !== agent.id))
+              } else {
+                alert('Failed to delete agent')
+              }
             }}
             onTaskCreated={() => { /* handled inside AgentCard via router.push */ }}
           />

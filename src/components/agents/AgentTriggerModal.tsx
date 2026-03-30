@@ -12,18 +12,24 @@ interface AgentTriggerModalProps {
 export function AgentTriggerModal({ open, agent, onClose, onCreated }: AgentTriggerModalProps) {
   const [title, setTitle] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (!open) return null
 
   async function submit() {
     if (!title.trim()) return
     setLoading(true)
+    setError(null)
     try {
-      await fetch('/api/tasks', {
+      const res = await fetch('/api/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: title.trim(), agent_slug: agent.slug }),
       })
+      if (!res.ok) {
+        setError('Failed to create task. Please try again.')
+        return
+      }
       setTitle('')
       onCreated()
     } finally {
@@ -46,8 +52,9 @@ export function AgentTriggerModal({ open, agent, onClose, onCreated }: AgentTrig
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') submit() }}
           placeholder="e.g. Research Stripe for my PMM interview"
-          className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50 mb-4"
+          className="w-full bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50 mb-2"
         />
+        {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
         <div className="flex gap-3 justify-end">
           <button onClick={onClose} className="text-sm text-slate-500 hover:text-slate-300 transition">Cancel</button>
           <button

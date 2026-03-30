@@ -38,9 +38,13 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
   const [skills, setSkills] = useState<Skill[]>([])
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>(agent?.skill_slugs || [])
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [skillsError, setSkillsError] = useState(false)
 
   useEffect(() => {
-    fetch('/api/skills').then(r => r.json()).then(setSkills).catch(() => {})
+    fetch('/api/skills').then(r => r.json()).then(setSkills).catch(() => {
+      setSkillsError(true)
+    })
   }, [])
 
   async function generate(description: string) {
@@ -51,6 +55,14 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description, conversation }),
       })
+      if (!res.ok) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'user', content: description },
+          { role: 'assistant', content: 'Failed to generate agent definition. Please try again.' },
+        ])
+        return
+      }
       const result = await res.json()
       if (result.role) {
         setSections(result as AgentSections)
@@ -68,6 +80,7 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
   async function save() {
     if (!sections || !name.trim()) return
     setSaving(true)
+    setSaveError(null)
     try {
       const body = { name: name.trim(), ...sections, skill_slugs: selectedSlugs }
       const res = agent
@@ -84,6 +97,8 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
       if (res.ok) {
         const saved = await res.json()
         onSave(saved)
+      } else {
+        setSaveError('Failed to save agent. Please try again.')
       }
     } finally {
       setSaving(false)
@@ -159,7 +174,9 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
           {/* Skills picker */}
           <div>
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Skills</label>
-            {skills.length === 0 ? (
+            {skillsError ? (
+              <p className="text-xs text-red-400">Could not load skills</p>
+            ) : skills.length === 0 ? (
               <p className="text-xs text-slate-600">No skills available — create skills first</p>
             ) : (
               <div className="space-y-1.5">
@@ -197,7 +214,8 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1e2130] flex-shrink-0 flex justify-end">
+        <div className="px-6 py-4 border-t border-[#1e2130] flex-shrink-0 flex flex-col items-end gap-2">
+          {saveError && <p className="text-red-400 text-xs">{saveError}</p>}
           <button
             onClick={save}
             disabled={!sections || !name.trim() || saving}
