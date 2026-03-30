@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# [Your Name]'s Command Center
 
-## Getting Started
+An AI agent platform I built to manage research and interview preparation workflows.
 
-First, run the development server:
+## What it demonstrates
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Agent architecture**: configurable AI agents with defined roles, goals, and constraints
+- **Skill composition**: reusable skills that shape how agents execute specific types of work
+- **Multi-step execution**: agents break tasks into steps, execute them sequentially, and log every action
+- **Live observability**: watch agents think in real time through SSE-streamed execution logs
+- **Completion reports**: every finished task generates a structured report with timing and cost breakdown
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Demo walkthrough (5 minutes)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Tasks section**: show the completed Stripe PMM research task — open the Report tab
+2. **Execution in progress**: show Task 2 (Adyen) — explain the step structure and what each executor does
+3. **Run a new task**: go to Agents → The Researcher → "Run agent" → enter a company name
+4. **Watch it execute**: narrate the brainstorm → accept plan → live execution logs
+5. **Agents & Skills**: show how agents are configured and how skills shape their behaviour
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Stack
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 15, TypeScript, Tailwind CSS, Supabase, Anthropic Claude Sonnet, optional Tavily web search
