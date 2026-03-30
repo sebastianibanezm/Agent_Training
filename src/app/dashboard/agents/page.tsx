@@ -34,6 +34,7 @@ export default function AgentsPage() {
               await fetch(`/api/agents/${agent.slug}`, { method: 'DELETE' })
               setAgents(prev => prev.filter(a => a.id !== agent.id))
             }}
+            onTaskCreated={() => { /* handled inside AgentCard via router.push */ }}
           />
         ))}
       </div>
