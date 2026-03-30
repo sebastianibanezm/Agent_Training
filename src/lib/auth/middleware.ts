@@ -32,7 +32,7 @@ export async function applyMiddleware(req: NextRequest): Promise<NextResponse> {
   }
 
   // Rule 4: Authenticated + /setup/* → if user_name set, redirect to tasks
-  if (pathname.startsWith('/setup')) {
+  if (pathname === '/setup' || pathname.startsWith('/setup/')) {
     const userName = await getUserName()
     if (userName) {
       return NextResponse.redirect(new URL('/dashboard/tasks', req.url))
