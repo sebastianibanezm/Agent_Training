@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Task, Action } from '@/types'
 import { BrainstormPanel } from '@/components/execution/BrainstormPanel'
 import { ExecutionPanel } from '@/components/execution/ExecutionPanel'
@@ -16,10 +16,15 @@ export function TaskDetail({ task, onTaskUpdate }: TaskDetailProps) {
   const [action, setAction] = useState<Action | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('brainstorm')
   const [loading, setLoading] = useState(true)
+  const onTaskUpdateRef = useRef(onTaskUpdate)
+  useEffect(() => { onTaskUpdateRef.current = onTaskUpdate }, [onTaskUpdate])
+
+  useEffect(() => {
+    setActiveTab(task.status === 'done' ? 'report' : task.status === 'running' ? 'execution' : 'brainstorm')
+  }, [task.status])
 
   useEffect(() => {
     setLoading(true)
-    setActiveTab(task.status === 'done' ? 'report' : task.status === 'running' ? 'execution' : 'brainstorm')
 
     // Load or create action
     fetch(`/api/actions?task_id=${task.id}`)
@@ -37,7 +42,7 @@ export function TaskDetail({ task, onTaskUpdate }: TaskDetailProps) {
           if (res.ok) {
             const newAction = await res.json()
             setAction(newAction)
-            onTaskUpdate({ ...task, status: 'brainstorming' })
+            onTaskUpdateRef.current({ ...task, status: 'brainstorming' })
           }
         }
       })

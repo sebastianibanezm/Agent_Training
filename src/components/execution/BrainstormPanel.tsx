@@ -40,26 +40,34 @@ export function BrainstormPanel({ action, task, onPlanAccepted }: BrainstormPane
 
       const reader = res.body!.getReader()
       const decoder = new TextDecoder()
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value)
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '))
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
         for (const line of lines) {
-          const data = JSON.parse(line.slice(6))
-          if (data.type === 'delta') {
-            assistantContent += data.content
-            setMessages(prev => {
-              const updated = [...prev]
-              updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
-              return updated
-            })
-          }
-          if (data.type === 'done') {
-            setHasPlan(data.hasPlan)
-            setStepCount(data.stepCount)
+          if (!line.startsWith('data: ')) continue
+          try {
+            const data = JSON.parse(line.slice(6))
+            if (data.type === 'delta') {
+              assistantContent += data.content
+              setMessages(prev => {
+                const updated = [...prev]
+                updated[updated.length - 1] = { role: 'assistant', content: assistantContent }
+                return updated
+              })
+            }
+            if (data.type === 'done') {
+              setHasPlan(data.hasPlan)
+              setStepCount(data.stepCount)
+            }
+          } catch {
+            // skip malformed line
           }
         }
       }

@@ -23,34 +23,39 @@ export function ExecutionPanel({ action, task, onComplete }: ExecutionPanelProps
 
   async function runChain(currentSteps: ActionStep[]) {
     setRunning(true)
-    for (const step of currentSteps) {
-      if (step.status !== 'pending') continue
+    try {
+      for (const step of currentSteps) {
+        if (step.status !== 'pending') continue
 
-      await new Promise<void>((resolve, reject) => {
-        const sse = new EventSource(`/api/actions/${action.id}/steps/${step.id}/events`)
-        sse.onmessage = (e) => {
-          const event = JSON.parse(e.data)
-          if (event.type === 'log') addLogLine(step.id, event.content)
-          if (event.type === 'done') {
-            sse.close()
-            setSteps(prev => prev.map(s => s.id === step.id ? { ...s, status: 'done' } : s))
-            resolve()
+        await new Promise<void>((resolve, reject) => {
+          const sse = new EventSource(`/api/actions/${action.id}/steps/${step.id}/events`)
+          sse.onmessage = (e) => {
+            const event = JSON.parse(e.data)
+            if (event.type === 'log') addLogLine(step.id, event.content)
+            if (event.type === 'done') {
+              sse.close()
+              setSteps(prev => prev.map(s => s.id === step.id ? { ...s, status: 'done' } : s))
+              resolve()
+            }
+            if (event.type === 'error') {
+              sse.close()
+              setSteps(prev => prev.map(s => s.id === step.id ? { ...s, status: 'error' } : s))
+              reject(new Error(event.content))
+            }
           }
-          if (event.type === 'error') {
-            sse.close()
-            setSteps(prev => prev.map(s => s.id === step.id ? { ...s, status: 'error' } : s))
-            reject(new Error(event.content))
-          }
-        }
-        sse.onerror = () => { sse.close(); reject(new Error('SSE connection failed')) }
+          sse.onerror = () => { sse.close(); reject(new Error('SSE connection failed')) }
 
-        // Call execute AFTER SSE is open
-        fetch(`/api/actions/${action.id}/execute`, { method: 'POST' })
-          .catch(reject)
-      })
+          // Call execute AFTER SSE is open
+          fetch(`/api/actions/${action.id}/execute`, { method: 'POST' })
+            .catch(reject)
+        })
+      }
+      onComplete()
+    } catch {
+      // step failed — running will be cleared in finally
+    } finally {
+      setRunning(false)
     }
-    setRunning(false)
-    onComplete()
   }
 
   useEffect(() => {
