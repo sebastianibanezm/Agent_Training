@@ -31,6 +31,7 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
   const [conversation, setConversation] = useState<ConversationMessage[]>([])
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   async function generate(description: string) {
     setGenerating(true)
@@ -40,6 +41,14 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description, conversation }),
       })
+      if (!res.ok) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'user', content: description },
+          { role: 'assistant', content: 'Failed to generate skill definition. Please try again.' },
+        ])
+        return
+      }
       const result = await res.json()
       if (result.trigger) {
         setSections(result as SkillSections)
@@ -73,6 +82,8 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
       if (res.ok) {
         const saved = await res.json()
         onSave(saved)
+      } else {
+        setSaveError('Failed to save skill. Please try again.')
       }
     } finally {
       setSaving(false)
@@ -144,7 +155,8 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1e2130] flex-shrink-0 flex justify-end">
+        <div className="px-6 py-4 border-t border-[#1e2130] flex-shrink-0 flex flex-col items-end gap-2">
+          {saveError && <p className="text-red-400 text-xs">{saveError}</p>}
           <button
             onClick={save}
             disabled={!sections || !name.trim() || saving}

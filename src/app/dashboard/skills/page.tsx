@@ -7,9 +7,16 @@ import type { Skill } from '@/types'
 export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([])
   const [editing, setEditing] = useState<Skill | null | 'new'>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/skills').then(r => r.json()).then(setSkills)
+    fetch('/api/skills')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load skills')
+        return res.json()
+      })
+      .then(setSkills)
+      .catch(() => setError('Failed to load skills. Please refresh.'))
   }, [])
 
   return (
@@ -24,6 +31,8 @@ export default function SkillsPage() {
         </button>
       </div>
 
+      {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {skills.map(skill => (
           <SkillCard
@@ -31,8 +40,12 @@ export default function SkillsPage() {
             skill={skill}
             onEdit={() => setEditing(skill)}
             onDelete={async () => {
-              await fetch(`/api/skills/${skill.slug}`, { method: 'DELETE' })
-              setSkills(prev => prev.filter(s => s.id !== skill.id))
+              const res = await fetch(`/api/skills/${skill.slug}`, { method: 'DELETE' })
+              if (res.ok) {
+                setSkills(prev => prev.filter(s => s.id !== skill.id))
+              } else {
+                setError('Failed to delete skill. Please try again.')
+              }
             }}
           />
         ))}
