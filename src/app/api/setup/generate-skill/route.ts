@@ -35,7 +35,12 @@ export async function POST(req: NextRequest) {
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '{}'
     const cleaned = text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
-    const parsed = JSON.parse(cleaned)
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(cleaned)
+    } catch {
+      return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
+    }
     return NextResponse.json(parsed)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed'
