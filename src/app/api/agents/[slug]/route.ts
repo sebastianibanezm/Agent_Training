@@ -3,11 +3,11 @@ import { createServerClient } from '@/lib/supabase/server'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const body = await req.json()
+  const { name, role, goals, constraints, skill_slugs } = await req.json()
   const supabase = createServerClient()
   const { data, error } = await supabase
     .from('agents')
-    .update({ ...body, updated_at: new Date().toISOString() })
+    .update({ name, role, goals, constraints, skill_slugs, updated_at: new Date().toISOString() })
     .eq('slug', slug)
     .select()
     .single()
