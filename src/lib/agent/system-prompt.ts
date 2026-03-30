@@ -36,3 +36,5 @@ When you have gathered enough information and are ready to propose an execution 
 Valid executor_type values: research, document, draft, analyzer, email, comparison, coach, flashcard.
 Only include this block when you are ready to commit to a plan. Do not include it in exploratory messages.`
 }
+
+export const buildBrainstormSystemPrompt = buildSystemPrompt
