@@ -4,6 +4,10 @@ import { createServerClient } from '@/lib/supabase/server'
 export async function POST(req: NextRequest) {
   const { name } = await req.json()
 
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+  }
+
   try {
     const supabase = createServerClient()
 
@@ -27,7 +31,7 @@ export async function POST(req: NextRequest) {
     // Save user name
     const { error: settingsError } = await supabase
       .from('settings')
-      .upsert({ key: 'user_name', value: name }, { onConflict: 'key' })
+      .upsert({ key: 'user_name', value: name.trim() }, { onConflict: 'key' })
 
     if (settingsError) throw settingsError
 
