@@ -18,6 +18,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   if (!step) return NextResponse.json({ error: 'No pending steps' }, { status: 400 })
 
   const { data: action } = await supabase.from('actions').select('*').eq('id', id).single()
+  if (!action) return NextResponse.json({ error: 'Action not found' }, { status: 404 })
   const { data: task } = await supabase.from('tasks').select('*').eq('id', action.task_id).single()
   const agent = task?.agent_slug
     ? (await supabase.from('agents').select('*').eq('slug', task.agent_slug).single()).data
