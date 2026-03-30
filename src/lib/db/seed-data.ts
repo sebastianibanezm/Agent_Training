@@ -62,19 +62,19 @@ export const SEED = {
   },
   tasks: {
     task1: {
-      id: 'task1111-1111-1111-1111-111111111111',
+      id: 'aa110001-0000-0000-0000-000000000001',
       title: 'Research Stripe for my PMM interview',
       status: 'done',
       agent_slug: 'the-researcher',
     },
     task2: {
-      id: 'task2222-2222-2222-2222-222222222222',
+      id: 'aa110002-0000-0000-0000-000000000002',
       title: 'Prep talking points for Adyen CMO role',
       status: 'running',
       agent_slug: 'interview-coach',
     },
     task3: {
-      id: 'task3333-3333-3333-3333-333333333333',
+      id: 'aa110003-0000-0000-0000-000000000003',
       title: 'Draft my LinkedIn headline',
       status: 'draft',
       agent_slug: null,
@@ -82,8 +82,8 @@ export const SEED = {
   },
   actions: {
     action1: {
-      id: 'act11111-1111-1111-1111-111111111111',
-      task_id: 'task1111-1111-1111-1111-111111111111',
+      id: 'bb220001-0000-0000-0000-000000000001',
+      task_id: 'aa110001-0000-0000-0000-000000000001',
       status: 'done',
       conversation: [
         { role: 'user', content: 'Research Stripe for my PMM interview next week' },
@@ -91,8 +91,8 @@ export const SEED = {
       ] as ConversationMessage[],
     },
     action2: {
-      id: 'act22222-2222-2222-2222-222222222222',
-      task_id: 'task2222-2222-2222-2222-222222222222',
+      id: 'bb220002-0000-0000-0000-000000000002',
+      task_id: 'aa110002-0000-0000-0000-000000000002',
       status: 'running',
       conversation: [
         { role: 'user', content: 'Help me prep for a CMO interview at Adyen' },
@@ -101,21 +101,21 @@ export const SEED = {
     },
   },
   steps: {
-    s1a: { id: 'step1a11-1111-1111-1111-111111111111', action_id: 'act11111-1111-1111-1111-111111111111', position: 1, title: 'Identify research targets', description: 'Confirm Stripe as target, identify key product areas relevant to PMM', executor_type: 'research', status: 'done', output: 'Confirmed: Stripe Inc. Target role: Product Marketing Manager. Key areas: payments infrastructure, developer tools, B2B billing.' },
-    s1b: { id: 'step1b11-1111-1111-1111-111111111111', action_id: 'act11111-1111-1111-1111-111111111111', position: 2, title: 'Gather company intelligence', description: 'Deep-dive on Stripe\'s business model, recent news, and market position', executor_type: 'research', status: 'done', output: 'Stripe processes $1T+ annually. Recent focus: B2B SaaS billing, Stripe Tax, Revenue Recognition. IPO anticipated.' },
-    s1c: { id: 'step1c11-1111-1111-1111-111111111111', action_id: 'act11111-1111-1111-1111-111111111111', position: 3, title: 'Map competitive landscape', description: 'Analyze Square, Adyen, Braintree — positioning and differentiators', executor_type: 'analyzer', status: 'done', output: 'Competitors: Square (SMB focus), Adyen (enterprise), Braintree (developer-friendly). Stripe leads on DX and ecosystem.' },
-    s1d: { id: 'step1d11-1111-1111-1111-111111111111', action_id: 'act11111-1111-1111-1111-111111111111', position: 4, title: 'Generate interview briefing', description: 'Compile everything into a structured PMM interview prep document', executor_type: 'document', status: 'done', output: '## Stripe PMM Briefing\n\nStripe is a developer-first payments infrastructure company processing over $1 trillion annually...' },
-    s2a: { id: 'step2a22-2222-2222-2222-222222222222', action_id: 'act22222-2222-2222-2222-222222222222', position: 1, title: 'Research Adyen\'s marketing positioning', description: 'Understand how Adyen positions itself vs competitors', executor_type: 'research', status: 'done', output: 'Adyen positions as enterprise-only, no SMB. Key differentiator: unified commerce platform. Tagline: "The financial technology platform."' },
-    s2b: { id: 'step2b22-2222-2222-2222-222222222222', action_id: 'act22222-2222-2222-2222-222222222222', position: 2, title: 'Identify likely CMO interview themes', description: 'Map the key strategic questions a CMO candidate would face', executor_type: 'analyzer', status: 'done', output: 'Themes: global expansion, payments complexity narrative, enterprise sales cycles, Adyen\'s brand vs product awareness gap.' },
-    s2c: { id: 'step2c22-2222-2222-2222-222222222222', action_id: 'act22222-2222-2222-2222-222222222222', position: 3, title: 'Draft talking points', description: 'Build credible, specific answers tied to Adyen\'s context', executor_type: 'draft', status: 'pending', output: null },
-    s2d: { id: 'step2d22-2222-2222-2222-222222222222', action_id: 'act22222-2222-2222-2222-222222222222', position: 4, title: 'Format final prep sheet', description: 'Compile into a printable prep document', executor_type: 'document', status: 'pending', output: null },
+    s1a: { id: 'cc330001-0001-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', position: 1, title: 'Identify research targets', description: 'Confirm Stripe as target, identify key product areas relevant to PMM', executor_type: 'research', status: 'done', output: 'Confirmed: Stripe Inc. Target role: Product Marketing Manager. Key areas: payments infrastructure, developer tools, B2B billing.' },
+    s1b: { id: 'cc330001-0002-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', position: 2, title: 'Gather company intelligence', description: 'Deep-dive on Stripe\'s business model, recent news, and market position', executor_type: 'research', status: 'done', output: 'Stripe processes $1T+ annually. Recent focus: B2B SaaS billing, Stripe Tax, Revenue Recognition. IPO anticipated.' },
+    s1c: { id: 'cc330001-0003-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', position: 3, title: 'Map competitive landscape', description: 'Analyze Square, Adyen, Braintree — positioning and differentiators', executor_type: 'analyzer', status: 'done', output: 'Competitors: Square (SMB focus), Adyen (enterprise), Braintree (developer-friendly). Stripe leads on DX and ecosystem.' },
+    s1d: { id: 'cc330001-0004-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', position: 4, title: 'Generate interview briefing', description: 'Compile everything into a structured PMM interview prep document', executor_type: 'document', status: 'done', output: '## Stripe PMM Briefing\n\nStripe is a developer-first payments infrastructure company processing over $1 trillion annually...' },
+    s2a: { id: 'cc330002-0001-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', position: 1, title: 'Research Adyen\'s marketing positioning', description: 'Understand how Adyen positions itself vs competitors', executor_type: 'research', status: 'done', output: 'Adyen positions as enterprise-only, no SMB. Key differentiator: unified commerce platform. Tagline: "The financial technology platform."' },
+    s2b: { id: 'cc330002-0002-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', position: 2, title: 'Identify likely CMO interview themes', description: 'Map the key strategic questions a CMO candidate would face', executor_type: 'analyzer', status: 'done', output: 'Themes: global expansion, payments complexity narrative, enterprise sales cycles, Adyen\'s brand vs product awareness gap.' },
+    s2c: { id: 'cc330002-0003-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', position: 3, title: 'Draft talking points', description: 'Build credible, specific answers tied to Adyen\'s context', executor_type: 'draft', status: 'pending', output: null },
+    s2d: { id: 'cc330002-0004-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', position: 4, title: 'Format final prep sheet', description: 'Compile into a printable prep document', executor_type: 'document', status: 'pending', output: null },
   },
   usageEvents: [
-    { id: 'use11111-1111-1111-1111-111111111111', action_id: 'act11111-1111-1111-1111-111111111111', step_id: 'step1a11-1111-1111-1111-111111111111', model: 'claude-sonnet-4-6', input_tokens: 450, output_tokens: 380, cost_usd: 0.007050 },
-    { id: 'use11112-1111-1111-1111-111111111112', action_id: 'act11111-1111-1111-1111-111111111111', step_id: 'step1b11-1111-1111-1111-111111111111', model: 'claude-sonnet-4-6', input_tokens: 520, output_tokens: 420, cost_usd: 0.007860 },
-    { id: 'use11113-1111-1111-1111-111111111113', action_id: 'act11111-1111-1111-1111-111111111111', step_id: 'step1c11-1111-1111-1111-111111111111', model: 'claude-sonnet-4-6', input_tokens: 380, output_tokens: 350, cost_usd: 0.006390 },
-    { id: 'use11114-1111-1111-1111-111111111114', action_id: 'act11111-1111-1111-1111-111111111111', step_id: 'step1d11-1111-1111-1111-111111111111', model: 'claude-sonnet-4-6', input_tokens: 600, output_tokens: 500, cost_usd: 0.009300 },
-    { id: 'use22221-2222-2222-2222-222222222221', action_id: 'act22222-2222-2222-2222-222222222222', step_id: 'step2a22-2222-2222-2222-222222222222', model: 'claude-sonnet-4-6', input_tokens: 410, output_tokens: 360, cost_usd: 0.006630 },
-    { id: 'use22222-2222-2222-2222-222222222222', action_id: 'act22222-2222-2222-2222-222222222222', step_id: 'step2b22-2222-2222-2222-222222222222', model: 'claude-sonnet-4-6', input_tokens: 490, output_tokens: 400, cost_usd: 0.007470 },
+    { id: 'dd440001-0001-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', step_id: 'cc330001-0001-0000-0000-000000000001', model: 'claude-sonnet-4-6', input_tokens: 450, output_tokens: 380, cost_usd: 0.007050 },
+    { id: 'dd440001-0002-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', step_id: 'cc330001-0002-0000-0000-000000000001', model: 'claude-sonnet-4-6', input_tokens: 520, output_tokens: 420, cost_usd: 0.007860 },
+    { id: 'dd440001-0003-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', step_id: 'cc330001-0003-0000-0000-000000000001', model: 'claude-sonnet-4-6', input_tokens: 380, output_tokens: 350, cost_usd: 0.006390 },
+    { id: 'dd440001-0004-0000-0000-000000000001', action_id: 'bb220001-0000-0000-0000-000000000001', step_id: 'cc330001-0004-0000-0000-000000000001', model: 'claude-sonnet-4-6', input_tokens: 600, output_tokens: 500, cost_usd: 0.009300 },
+    { id: 'dd440002-0001-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', step_id: 'cc330002-0001-0000-0000-000000000002', model: 'claude-sonnet-4-6', input_tokens: 410, output_tokens: 360, cost_usd: 0.006630 },
+    { id: 'dd440002-0002-0000-0000-000000000002', action_id: 'bb220002-0000-0000-0000-000000000002', step_id: 'cc330002-0002-0000-0000-000000000002', model: 'claude-sonnet-4-6', input_tokens: 490, output_tokens: 400, cost_usd: 0.007470 },
   ],
 }

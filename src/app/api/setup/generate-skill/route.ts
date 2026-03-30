@@ -10,9 +10,9 @@ const SYSTEM = `You are an AI skill designer. When given a description of what a
 - example_output: a short realistic example of what the output looks like`
 
 export async function POST(req: NextRequest) {
-  const { description, conversation }: {
+  const { description, conversation = [] }: {
     description: string
-    conversation: ConversationMessage[]
+    conversation?: ConversationMessage[]
   } = await req.json()
 
   if (!description) {
@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
     try {
       parsed = JSON.parse(cleaned)
     } catch {
+      return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
+    }
+    // Validate shape
+    if (typeof (parsed as Record<string, unknown>).trigger !== 'string' ||
+        typeof (parsed as Record<string, unknown>).instructions !== 'string' ||
+        typeof (parsed as Record<string, unknown>).output_format !== 'string' ||
+        typeof (parsed as Record<string, unknown>).example_output !== 'string') {
       return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
     }
     return NextResponse.json(parsed)

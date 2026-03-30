@@ -8,9 +8,9 @@ Example output:
 {"role":"Strategic competitive intelligence analyst for B2B SaaS companies","goals":"Deliver concise, interview-ready competitive briefings; prioritize recent market movements; connect findings to the candidate's target role","constraints":"No fabricated statistics; responses under 600 words unless asked; no legal or financial advice"}`
 
 export async function POST(req: NextRequest) {
-  const { description, conversation }: {
+  const { description, conversation = [] }: {
     description: string
-    conversation: ConversationMessage[]
+    conversation?: ConversationMessage[]
   } = await req.json()
 
   if (!description) {
@@ -38,6 +38,12 @@ export async function POST(req: NextRequest) {
     try {
       parsed = JSON.parse(cleaned)
     } catch {
+      return NextResponse.json({ error: 'Failed to parse agent definition' }, { status: 500 })
+    }
+    // Validate shape
+    if (typeof (parsed as Record<string, unknown>).role !== 'string' ||
+        typeof (parsed as Record<string, unknown>).goals !== 'string' ||
+        typeof (parsed as Record<string, unknown>).constraints !== 'string') {
       return NextResponse.json({ error: 'Failed to parse agent definition' }, { status: 500 })
     }
     return NextResponse.json(parsed)
