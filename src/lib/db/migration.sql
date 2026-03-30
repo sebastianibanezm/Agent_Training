@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- Actions (one per task)
 CREATE TABLE IF NOT EXISTS actions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  task_id      uuid REFERENCES tasks(id) ON DELETE CASCADE,
+  task_id      uuid NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   status       text NOT NULL DEFAULT 'brainstorming',
   conversation jsonb DEFAULT '[]',
   created_at   timestamptz DEFAULT now(),
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS actions (
 -- Action steps
 CREATE TABLE IF NOT EXISTS action_steps (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  action_id     uuid REFERENCES actions(id) ON DELETE CASCADE,
+  action_id     uuid NOT NULL REFERENCES actions(id) ON DELETE CASCADE,
   position      integer NOT NULL,
   title         text NOT NULL,
   description   text,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS action_steps (
 -- API usage events (cost tracking per step)
 CREATE TABLE IF NOT EXISTS api_usage_events (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  action_id     uuid REFERENCES actions(id) ON DELETE CASCADE NOT NULL,
+  action_id     uuid NOT NULL REFERENCES actions(id) ON DELETE CASCADE,
   step_id       uuid REFERENCES action_steps(id) ON DELETE CASCADE,
   model         text,
   input_tokens  integer,
@@ -81,6 +81,12 @@ CREATE TABLE IF NOT EXISTS settings (
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
+
+-- Indexes for FK columns (Postgres does not auto-index these)
+CREATE INDEX IF NOT EXISTS idx_actions_task_id ON actions(task_id);
+CREATE INDEX IF NOT EXISTS idx_action_steps_action_id ON action_steps(action_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_events_action_id ON api_usage_events(action_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_events_step_id ON api_usage_events(step_id);
 
 -- Transactional skill delete: removes skill + cleans up agent skill_slugs
 CREATE OR REPLACE FUNCTION delete_skill_and_unlink(skill_slug text)
