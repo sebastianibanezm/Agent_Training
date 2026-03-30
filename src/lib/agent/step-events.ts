@@ -20,8 +20,16 @@ interface StepHandlers {
 
 export function subscribeToStep(stepId: string, handlers: StepHandlers) {
   emitter.on(`step:${stepId}:log`, handlers.onLog)
-  emitter.once(`step:${stepId}:done`, handlers.onDone)
-  emitter.once(`step:${stepId}:error`, handlers.onError)
+
+  emitter.once(`step:${stepId}:done`, () => {
+    emitter.removeListener(`step:${stepId}:log`, handlers.onLog)
+    handlers.onDone()
+  })
+
+  emitter.once(`step:${stepId}:error`, (content: string) => {
+    emitter.removeListener(`step:${stepId}:log`, handlers.onLog)
+    handlers.onError(content)
+  })
 }
 
 export function unsubscribeFromStep(stepId: string) {

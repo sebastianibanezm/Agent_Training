@@ -21,6 +21,7 @@ export async function runResearchExecutor(ctx: ExecutorContext): Promise<string>
           max_results: 5,
         }),
       })
+      if (!resp.ok) throw new Error(`Tavily error: ${resp.status} ${resp.statusText}`)
       const data = await resp.json()
       const results = (data.results || []).slice(0, 5)
       webContext = results

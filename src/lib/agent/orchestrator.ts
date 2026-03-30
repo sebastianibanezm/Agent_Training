@@ -1,4 +1,4 @@
-import type { ActionStep, Agent, Skill } from '@/types'
+import type { ActionStep, Agent, Skill, ExecutorType } from '@/types'
 import { emitStepLog, emitStepDone, emitStepError } from './step-events'
 import { runResearchExecutor } from './executors/research'
 import { runDocumentExecutor } from './executors/document'
@@ -19,7 +19,7 @@ export type ExecutorContext = {
 
 type ExecutorFn = (ctx: ExecutorContext) => Promise<string>
 
-const EXECUTOR_MAP: Record<string, ExecutorFn> = {
+const EXECUTOR_MAP: Record<ExecutorType, ExecutorFn> = {
   research: runResearchExecutor,
   document: runDocumentExecutor,
   draft: runDraftExecutor,
