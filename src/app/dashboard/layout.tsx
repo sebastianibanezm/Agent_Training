@@ -1,5 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 async function getUserName(): Promise<string> {
   try {
@@ -10,13 +11,18 @@ async function getUserName(): Promise<string> {
       .eq('key', 'user_name')
       .single()
     return data?.value || 'Your'
-  } catch (error) {
-    console.warn('[DashboardLayout] getUserName failed:', error)
+  } catch {
     return 'Your'
   }
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url?.startsWith('https://') || !key?.startsWith('eyJ')) {
+    redirect('/setup/env')
+  }
+
   const userName = await getUserName()
 
   return (
