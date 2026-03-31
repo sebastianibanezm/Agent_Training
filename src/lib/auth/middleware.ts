@@ -5,8 +5,13 @@ import { getRequestSession } from './session'
 export async function applyMiddleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl
 
-  // Rule 0: If Supabase is not configured, send to env setup
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  // Rule 0: If Supabase is not properly configured, send to env setup
+  // Check URL format (not just presence) to catch placeholder values like "your-supabase-url"
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseConfigured = supabaseUrl?.startsWith('https://') && supabaseKey?.startsWith('eyJ')
+
+  if (!supabaseConfigured) {
     if (!pathname.startsWith('/setup/env') && !pathname.startsWith('/api/setup/')) {
       return NextResponse.redirect(new URL('/setup/env', req.url))
     }
