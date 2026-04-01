@@ -97,3 +97,8 @@ BEGIN
     WHERE skill_slug = ANY(skill_slugs);
 END;
 $$;
+
+-- Migration: add executor_type to skills and skill_slug/agent_slug to action_steps
+ALTER TABLE skills ADD COLUMN IF NOT EXISTS executor_type TEXT NOT NULL DEFAULT 'draft';
+ALTER TABLE action_steps ADD COLUMN IF NOT EXISTS skill_slug TEXT;
+ALTER TABLE action_steps ADD COLUMN IF NOT EXISTS agent_slug TEXT;

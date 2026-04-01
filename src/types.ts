@@ -3,6 +3,10 @@ export type ActionStatus = 'brainstorming' | 'ready' | 'running' | 'done' | 'pau
 export type StepStatus = 'pending' | 'running' | 'done' | 'error'
 export type ExecutorType = 'research' | 'document' | 'draft' | 'analyzer' | 'email' | 'comparison' | 'coach' | 'flashcard'
 
+export const EXECUTOR_TYPES: ExecutorType[] = [
+  'research', 'document', 'draft', 'analyzer', 'email', 'comparison', 'coach', 'flashcard'
+]
+
 export interface Task {
   id: string
   title: string
@@ -34,6 +38,8 @@ export interface ActionStep {
   title: string
   description: string | null
   executor_type: ExecutorType
+  skill_slug: string | null
+  agent_slug: string | null
   status: StepStatus
   output: string | null
   error: string | null
@@ -62,12 +68,15 @@ export interface Skill {
   instructions: string
   output_format: string
   example_output: string | null
+  executor_type: ExecutorType
   created_at: string
   updated_at: string
 }
 
+// Plan step shape parsed from Claude's JSON output (new format)
 export interface PlanStep {
   title: string
   description: string
-  executor_type: ExecutorType
+  skill_slug: string
+  agent_slug: string | null
 }
