@@ -1,12 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import type { Task, Action } from '@/types'
-import { BrainstormPanel } from '@/components/execution/BrainstormPanel'
-import { ExecutionPanel } from '@/components/execution/ExecutionPanel'
-import { ReportPanel } from '@/components/execution/ReportPanel'
+import { TaskPanel } from '@/components/tasks/TaskPanel'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
-
-type Tab = 'brainstorm' | 'execution' | 'report'
 
 interface TaskDetailProps {
   task: Task
@@ -16,20 +12,15 @@ interface TaskDetailProps {
 
 export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps) {
   const [action, setAction] = useState<Action | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('brainstorm')
   const [loading, setLoading] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const onTaskUpdateRef = useRef(onTaskUpdate)
   useEffect(() => { onTaskUpdateRef.current = onTaskUpdate }, [onTaskUpdate])
 
   useEffect(() => {
-    setActiveTab(task.status === 'done' ? 'report' : task.status === 'running' ? 'execution' : 'brainstorm')
-  }, [task.status])
-
-  useEffect(() => {
     setLoading(true)
+    setAction(null)
 
-    // Load or create action
     fetch(`/api/actions?task_id=${task.id}`)
       .then(r => r.ok ? r.json() : null)
       .then(async (existingAction) => {
@@ -52,11 +43,15 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
       .finally(() => setLoading(false))
   }, [task.id])
 
-  const tabs: { id: Tab; label: string; visible: boolean }[] = [
-    { id: 'brainstorm', label: 'Brainstorm', visible: true },
-    { id: 'execution', label: 'Execution', visible: task.status !== 'draft' },
-    { id: 'report', label: 'Report', visible: task.status === 'done' },
-  ]
+  function handleActionUpdated(updated: Action) {
+    setAction(updated)
+    // Sync task status from action status where applicable
+    if (updated.status === 'running' && task.status !== 'running') {
+      onTaskUpdate({ ...task, status: 'running' })
+    } else if (updated.status === 'done' && task.status !== 'done') {
+      onTaskUpdate({ ...task, status: 'done' })
+    }
+  }
 
   if (loading) {
     return <div className="flex items-center justify-center h-full text-slate-600 text-sm">Loading…</div>
@@ -64,34 +59,7 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-[#1e2130]">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 className="text-base font-bold text-slate-100 leading-snug">{task.title}</h2>
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="flex-shrink-0 text-slate-600 hover:text-red-400 transition text-xs mt-0.5"
-          >
-            Delete
-          </button>
-        </div>
-        <div className="flex gap-1">
-          {tabs.filter(t => t.visible).map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
-                activeTab === tab.id
-                  ? 'bg-cyan-500/20 text-cyan-400'
-                  : 'text-slate-500 hover:text-slate-300'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
+      {/* Delete confirmation */}
       <ConfirmDialog
         open={confirmDelete}
         title="Delete task"
@@ -103,30 +71,29 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
         }}
       />
 
-      {/* Panel */}
-      <div className="flex-1 overflow-hidden">
-        {activeTab === 'brainstorm' && action && (
-          <BrainstormPanel
+      {/* Header: title + delete */}
+      <div className="px-6 py-4 border-b border-[#1e2130] flex items-start justify-between gap-3 flex-shrink-0">
+        <h2 className="text-base font-bold text-slate-100 leading-snug">{task.title}</h2>
+        <button
+          onClick={() => setConfirmDelete(true)}
+          className="flex-shrink-0 text-slate-600 hover:text-red-400 transition text-xs mt-0.5"
+        >
+          Delete
+        </button>
+      </div>
+
+      {/* Panel area — relative so StepDetailPanel's absolute overlay works */}
+      <div className="flex-1 overflow-hidden relative p-4">
+        {action ? (
+          <TaskPanel
             action={action}
-            task={task}
-            onPlanAccepted={() => {
-              onTaskUpdate({ ...task, status: 'running' })
-              setActiveTab('execution')
-            }}
+            title={task.title}
+            onActionUpdated={handleActionUpdated}
           />
-        )}
-        {activeTab === 'execution' && action && (
-          <ExecutionPanel
-            action={action}
-            task={task}
-            onComplete={() => {
-              onTaskUpdate({ ...task, status: 'done' })
-              setActiveTab('report')
-            }}
-          />
-        )}
-        {activeTab === 'report' && action && (
-          <ReportPanel action={action} task={task} />
+        ) : (
+          <div className="flex items-center justify-center h-full text-slate-600 text-sm">
+            No action found for this task.
+          </div>
         )}
       </div>
     </div>
