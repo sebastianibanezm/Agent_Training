@@ -4,6 +4,7 @@ import type { Task, Action } from '@/types'
 import { BrainstormPanel } from '@/components/execution/BrainstormPanel'
 import { ExecutionPanel } from '@/components/execution/ExecutionPanel'
 import { ReportPanel } from '@/components/execution/ReportPanel'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 
 type Tab = 'brainstorm' | 'execution' | 'report'
 
@@ -17,6 +18,7 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
   const [action, setAction] = useState<Action | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('brainstorm')
   const [loading, setLoading] = useState(true)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const onTaskUpdateRef = useRef(onTaskUpdate)
   useEffect(() => { onTaskUpdateRef.current = onTaskUpdate }, [onTaskUpdate])
 
@@ -67,13 +69,8 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
         <div className="flex items-start justify-between gap-3 mb-3">
           <h2 className="text-base font-bold text-slate-100 leading-snug">{task.title}</h2>
           <button
-            onClick={async () => {
-              if (!confirm('Delete this task?')) return
-              await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
-              onTaskDelete(task.id)
-            }}
+            onClick={() => setConfirmDelete(true)}
             className="flex-shrink-0 text-slate-600 hover:text-red-400 transition text-xs mt-0.5"
-            title="Delete task"
           >
             Delete
           </button>
@@ -94,6 +91,17 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
           ))}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete task"
+        message="This task and all its progress will be permanently deleted."
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+          onTaskDelete(task.id)
+        }}
+      />
 
       {/* Panel */}
       <div className="flex-1 overflow-hidden">
