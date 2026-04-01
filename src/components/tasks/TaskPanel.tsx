@@ -303,6 +303,7 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated }: Tas
             action={action}
             onPlanAccepted={handlePlanAccepted}
             collapsed={chatCollapsed}
+            title={title}
           />
         </div>
       </div>

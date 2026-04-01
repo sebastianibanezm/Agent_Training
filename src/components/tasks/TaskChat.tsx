@@ -7,6 +7,7 @@ interface TaskChatProps {
   action: Action
   onPlanAccepted: () => void
   collapsed?: boolean
+  title?: string
 }
 
 function detectPlan(content: string): { hasPlan: boolean; stepCount: number } {
@@ -22,7 +23,7 @@ function detectPlan(content: string): { hasPlan: boolean; stepCount: number } {
   return { hasPlan: false, stepCount: 0 }
 }
 
-export function TaskChat({ action, onPlanAccepted, collapsed = false }: TaskChatProps) {
+export function TaskChat({ action, onPlanAccepted, collapsed = false, title }: TaskChatProps) {
   const [messages, setMessages] = useState<ConversationMessage[]>(action.conversation ?? [])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
@@ -30,6 +31,7 @@ export function TaskChat({ action, onPlanAccepted, collapsed = false }: TaskChat
   const [planStepCount, setPlanStepCount] = useState(0)
   const [isAccepting, setIsAccepting] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const autoSentRef = useRef(false)
 
   // Detect plan from existing conversation on mount
   useEffect(() => {
@@ -43,18 +45,28 @@ export function TaskChat({ action, onPlanAccepted, collapsed = false }: TaskChat
     }
   }, [])
 
+  // Auto-send task title as opening message when conversation is brand new
+  useEffect(() => {
+    if (autoSentRef.current) return
+    if ((action.conversation ?? []).length === 0 && title) {
+      autoSentRef.current = true
+      sendMessage(title)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isStreaming])
 
-  async function sendMessage() {
-    const trimmed = input.trim()
+  async function sendMessage(text?: string) {
+    const trimmed = (text ?? input).trim()
     if (!trimmed || isStreaming) return
 
     const userMsg: ConversationMessage = { role: 'user', content: trimmed }
     const nextMessages = [...messages, userMsg]
     setMessages(nextMessages)
-    setInput('')
+    if (!text) setInput('')
     setIsStreaming(true)
 
     try {
@@ -227,7 +239,7 @@ export function TaskChat({ action, onPlanAccepted, collapsed = false }: TaskChat
             className="flex-1 bg-[#0f1117] border border-[#2a2d3a] rounded-lg px-4 py-3 text-sm text-white resize-none focus:outline-none focus:border-cyan-500 disabled:opacity-50"
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!input.trim() || isStreaming}
             className="px-4 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-slate-900 font-bold rounded-lg text-sm transition"
           >
