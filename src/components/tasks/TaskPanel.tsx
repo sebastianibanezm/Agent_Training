@@ -8,6 +8,7 @@ import { TaskChat } from './TaskChat'
 import CompletionReport from './CompletionReport'
 
 interface TaskPanelProps {
+  title: string
   action: Action
   onActionUpdated: (action: Action) => void
 }
@@ -28,7 +29,7 @@ function StatusPill({ status }: { status: Action['status'] }) {
   )
 }
 
-export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelProps) {
+export function TaskPanel({ title, action: initialAction, onActionUpdated }: TaskPanelProps) {
   const [action, setAction] = useState<Action>(initialAction)
   const [steps, setSteps] = useState<ActionStep[]>([])
   const [selectedStep, setSelectedStep] = useState<ActionStep | null>(null)
@@ -257,6 +258,7 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
       <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[#1e2130] flex-shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <StatusPill status={action.status} />
+          <span className="text-slate-200 text-sm font-medium truncate">{title}</span>
         </div>
         {action.status === 'done' && (
           <button
@@ -315,7 +317,7 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
       {/* Completion Report modal */}
       {showReport && action.status === 'done' && (
         <CompletionReport
-          action={action}
+          title={title}
           steps={steps}
           onClose={() => setShowReport(false)}
         />

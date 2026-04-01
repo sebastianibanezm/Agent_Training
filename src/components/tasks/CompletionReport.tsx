@@ -1,14 +1,14 @@
 'use client'
 
-import { Action, ActionStep } from '@/types'
+import { ActionStep } from '@/types'
 
 interface CompletionReportProps {
-  action: Action
+  title: string
   steps: ActionStep[]
   onClose: () => void
 }
 
-export default function CompletionReport({ action, steps, onClose }: CompletionReportProps) {
+export default function CompletionReport({ title, steps, onClose }: CompletionReportProps) {
   const doneSteps = steps.filter(s => s.status === 'done' || s.status === 'completed')
 
   return (
@@ -27,7 +27,7 @@ export default function CompletionReport({ action, steps, onClose }: CompletionR
               <span className="text-green-400 text-lg font-bold">✓</span>
               <span className="text-slate-200 font-semibold text-base">Task Complete</span>
             </div>
-            <p className="text-slate-300 text-sm mt-1">{action.title}</p>
+            <p className="text-slate-300 text-sm mt-1">{title}</p>
             <p className="text-slate-400 text-sm leading-snug">
               {doneSteps.length} of {steps.length} steps completed
             </p>
