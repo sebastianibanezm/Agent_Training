@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { extractPlanFromConversation } from '@/lib/agent/plan-parser'
+import { extractPlanFromConversation, deriveExecutorType } from '@/lib/agent/plan-parser'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,12 +14,15 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'No plan found in last assistant message' }, { status: 422 })
   }
 
+  const { data: skills } = await supabase.from('skills').select('*')
+  const skillList = skills ?? []
+
   const stepsToInsert = plan.map((step, i) => ({
     action_id: id,
     position: i + 1,
     title: step.title,
     description: step.description,
-    executor_type: step.executor_type,
+    executor_type: deriveExecutorType(step.skill_slug, skillList),
     status: 'pending',
   }))
 

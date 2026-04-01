@@ -62,6 +62,7 @@ export interface Skill {
   instructions: string
   output_format: string
   example_output: string | null
+  executor_type: ExecutorType
   created_at: string
   updated_at: string
 }
@@ -69,5 +70,6 @@ export interface Skill {
 export interface PlanStep {
   title: string
   description: string
-  executor_type: ExecutorType
+  skill_slug: string
+  agent_slug: string | null
 }
