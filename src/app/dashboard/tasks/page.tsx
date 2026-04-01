@@ -47,7 +47,10 @@ function FirstTaskPrompt({ onCreated }: { onCreated: (task: Task) => void }) {
           className="w-full bg-[#161920] border border-[#1e2130] rounded-lg px-4 py-2.5 text-slate-200 placeholder-slate-600 text-sm focus:outline-none focus:border-cyan-400/50 mb-3"
         />
         <div className="bg-[#161920] border border-[#1e2130] rounded-lg px-4 py-3 mb-4">
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Task preview</p>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+            <span className="text-[11px] font-semibold text-slate-300">Task preview</span>
+          </div>
           <p className={`text-sm ${company.trim() ? 'text-slate-200' : 'text-slate-600 italic'}`}>{taskTitle}</p>
         </div>
         {error && <p className="text-xs text-red-400 mb-3">{error}</p>}

@@ -194,7 +194,7 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
                       onChange={() => toggleSkill(skill.slug)}
                       className="accent-cyan-500"
                     />
-                    <span className="text-xs text-slate-300">{skill.name}</span>
+                    <span className="text-sm text-slate-300">{skill.name}</span>
                     <span className="text-[10px] text-slate-600 truncate">{skill.trigger}</span>
                   </label>
                 ))}
@@ -211,7 +211,7 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
             </div>
             <div className="space-y-1">
               {Object.entries(EXECUTOR_DESCRIPTIONS).map(([type, desc]) => (
-                <div key={type} className="flex gap-2 text-xs">
+                <div key={type} className="flex gap-2 text-sm">
                   <span className="font-mono text-cyan-400 w-20 flex-shrink-0">{type}</span>
                   <span className="text-slate-500">{desc}</span>
                 </div>
