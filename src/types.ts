@@ -1,6 +1,6 @@
 export type TaskStatus = 'draft' | 'brainstorming' | 'planning' | 'running' | 'done'
 export type ActionStatus = 'brainstorming' | 'ready' | 'running' | 'done' | 'paused'
-export type StepStatus = 'pending' | 'running' | 'done' | 'error'
+export type StepStatus = 'pending' | 'running' | 'done' | 'error' | 'completed' | 'failed'
 export type ExecutorType = 'research' | 'document' | 'draft' | 'analyzer' | 'email' | 'comparison' | 'coach' | 'flashcard'
 
 export const EXECUTOR_TYPES: ExecutorType[] = [

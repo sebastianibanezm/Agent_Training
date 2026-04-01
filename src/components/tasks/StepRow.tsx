@@ -15,10 +15,10 @@ function StatusIcon({ status }: { status: ActionStep['status'] }) {
       <span className="animate-spin inline-block w-4 h-4 border-2 border-cyan-400 border-t-transparent rounded-full" />
     )
   }
-  if (status === 'done' || status === 'completed' as string) {
+  if (status === 'done' || status === 'completed') {
     return <span className="text-green-400 text-sm font-bold">✓</span>
   }
-  if (status === 'error' || status === 'failed' as string) {
+  if (status === 'error' || status === 'failed') {
     return <span className="text-red-400 text-sm font-bold">✗</span>
   }
   // pending
@@ -37,7 +37,7 @@ export function StepRow({ step, position, isSelected, onClick }: StepRowProps) {
     >
       {/* Position number */}
       <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#1e2130] text-slate-400 text-xs flex items-center justify-center">
-        {position + 1}
+        {position}
       </div>
 
       {/* Title */}
@@ -45,12 +45,10 @@ export function StepRow({ step, position, isSelected, onClick }: StepRowProps) {
 
       {/* Badges */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
-        {step.skill_slug && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 whitespace-nowrap">
-            {step.skill_slug}
-          </span>
-        )}
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400 whitespace-nowrap">
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 whitespace-nowrap">
+          {step.skill_slug ?? 'none'}
+        </span>
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400 border border-slate-600/30 whitespace-nowrap">
           {step.agent_slug ?? 'unassigned'}
         </span>
       </div>
