@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 import type { ConversationMessage } from '@/types'
 import { getAnthropicClient } from '@/lib/getAnthropicClient'
 
