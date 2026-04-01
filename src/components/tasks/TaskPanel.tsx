@@ -137,25 +137,23 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated, agent
         const result = await res.json() as { stepId: string; done: boolean }
         const { stepId, done: stepDone } = result
 
-        // Open SSE for live logs, then poll DB for step completion
+        // Open SSE for the step that just started running
         if (stepId) {
+          // Fetch fresh steps to avoid stale closure over the steps state variable
           const freshSteps = await fetchSteps()
           setSelectedStep(prev => {
             const match = freshSteps.find(s => s.id === stepId)
             return match ?? prev
           })
           openStepSSE(stepId)
-          // Poll DB until step is done or errored — SSE may miss events if step
-          // finishes before the EventSource connects (after() runs immediately)
+          // Wait for the SSE stream to close (step done) before firing next execute
           await new Promise<void>((resolve) => {
-            const check = setInterval(async () => {
-              const latest = await fetchSteps()
-              const step = latest.find(s => s.id === stepId)
-              if (step && (step.status === 'done' || step.status === 'error')) {
+            const check = setInterval(() => {
+              if (!sseRef.current) {
                 clearInterval(check)
                 resolve()
               }
-            }, 1000)
+            }, 500)
           })
         }
 
@@ -212,8 +210,7 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated, agent
       const fresh: Action = await res.json()
       updateAction(fresh)
     }
-    handleExecute()
-  }, [action.id, fetchSteps, updateAction, handleExecute])
+  }, [action.id, fetchSteps, updateAction])
 
   // ── step selection ────────────────────────────────────────────────────────
 
