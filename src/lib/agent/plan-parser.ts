@@ -1,4 +1,9 @@
-import type { ConversationMessage, PlanStep } from '@/types'
+import type { ConversationMessage, ExecutorType, PlanStep, Skill } from '@/types'
+
+export function deriveExecutorType(skill_slug: string, skills: Skill[]): ExecutorType {
+  const skill = skills.find(s => s.slug === skill_slug)
+  return skill?.executor_type ?? 'draft'
+}
 
 export function extractPlanFromConversation(
   conversation: ConversationMessage[]
