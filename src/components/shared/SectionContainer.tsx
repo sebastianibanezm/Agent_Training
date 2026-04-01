@@ -19,7 +19,8 @@ export function SectionContainer({ label, badge, explainer, children, empty }: S
   return (
     <div className="border border-[#1e2130] rounded-lg overflow-hidden mb-3">
       <div className="bg-[#161920] px-4 py-2.5 flex items-center gap-2 border-b border-[#1e2130]">
-        <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">{label}</span>
+        <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+        <span className="text-[11px] font-semibold text-slate-300">{label}</span>
         {badge && (
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${BADGE_STYLES[badge]}`}>
             {badge}
