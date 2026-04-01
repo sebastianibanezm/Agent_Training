@@ -17,7 +17,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   const { data: skills, error: skillsError } = await supabase.from('skills').select('*')
   if (skillsError) return NextResponse.json({ error: skillsError.message }, { status: 500 })
 
-  await supabase.from('action_steps').delete().eq('action_id', id)
+  const { error: deleteError } = await supabase.from('action_steps').delete().eq('action_id', id)
+  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
 
   const stepsToInsert = plan.map((step, i) => ({
     action_id: id,
