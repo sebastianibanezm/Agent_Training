@@ -13,17 +13,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: action } = await supabase.from('actions').select('*').eq('id', id).single()
   if (!action) return NextResponse.json({ error: 'Action not found' }, { status: 404 })
 
-  const { data: task } = await supabase.from('tasks').select('*').eq('id', action.task_id).single()
-  const agent = task?.agent_slug
-    ? (await supabase.from('agents').select('*').eq('slug', task.agent_slug).single()).data
-    : null
-  const skills = agent?.skill_slugs?.length
-    ? (await supabase.from('skills').select('*').in('slug', agent.skill_slugs)).data || []
-    : []
+  const { data: agents, error: agentsError } = await supabase.from('agents').select('*')
+  if (agentsError) return NextResponse.json({ error: agentsError.message }, { status: 500 })
 
-  const systemPrompt = agent
-    ? buildBrainstormSystemPrompt(agent, skills)
-    : 'You are a helpful AI assistant that helps users plan their tasks. When ready, propose a plan as a JSON block.'
+  const { data: skills, error: skillsError } = await supabase.from('skills').select('*')
+  if (skillsError) return NextResponse.json({ error: skillsError.message }, { status: 500 })
+
+  const systemPrompt = buildBrainstormSystemPrompt(agents ?? [], skills ?? [])
 
   const conversation: ConversationMessage[] = action.conversation || []
   const updatedConversation: ConversationMessage[] = [

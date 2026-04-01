@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { extractPlanFromConversation, deriveExecutorType } from '@/lib/agent/plan-parser'
+import { deriveExecutorType, extractPlanFromConversation } from '@/lib/agent/plan-parser'
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,15 +14,20 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'No plan found in last assistant message' }, { status: 422 })
   }
 
-  const { data: skills } = await supabase.from('skills').select('*')
-  const skillList = skills ?? []
+  const { data: skills, error: skillsError } = await supabase.from('skills').select('*')
+  if (skillsError) return NextResponse.json({ error: skillsError.message }, { status: 500 })
+
+  const { error: deleteError } = await supabase.from('action_steps').delete().eq('action_id', id)
+  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
 
   const stepsToInsert = plan.map((step, i) => ({
     action_id: id,
     position: i + 1,
     title: step.title,
     description: step.description,
-    executor_type: deriveExecutorType(step.skill_slug, skillList),
+    skill_slug: step.skill_slug,
+    agent_slug: step.agent_slug,
+    executor_type: deriveExecutorType(step.skill_slug, skills ?? []),
     status: 'pending',
   }))
 
@@ -33,8 +38,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   if (stepsError) return NextResponse.json({ error: stepsError.message }, { status: 500 })
 
-  await supabase.from('actions').update({ status: 'running' }).eq('id', id)
-  await supabase.from('tasks').update({ status: 'running' }).eq('id', action.task_id)
+  await supabase.from('actions').update({ status: 'ready' }).eq('id', id)
 
   return NextResponse.json({ steps })
 }

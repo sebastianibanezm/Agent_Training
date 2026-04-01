@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import type { Skill, ConversationMessage } from '@/types'
+import type { Skill, ConversationMessage, ExecutorType } from '@/types'
+import { EXECUTOR_TYPES } from '@/types'
 import { SectionContainer } from '@/components/shared/SectionContainer'
 import { ChatInput } from '@/components/shared/ChatInput'
 import { slugify } from '@/lib/utils'
@@ -20,6 +21,7 @@ interface SkillSections {
 
 export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
   const [name, setName] = useState(skill?.name || '')
+  const [executorType, setExecutorType] = useState<ExecutorType>(skill?.executor_type ?? 'draft')
   const [sections, setSections] = useState<SkillSections | null>(
     skill ? {
       trigger: skill.trigger,
@@ -67,7 +69,7 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
     if (!sections || !name.trim()) return
     setSaving(true)
     try {
-      const body = { name: name.trim(), ...sections }
+      const body = { name: name.trim(), executor_type: executorType, ...sections }
       const res = skill
         ? await fetch(`/api/skills/${skill.slug}`, {
             method: 'PATCH',
@@ -113,6 +115,20 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
               placeholder="e.g. Competitive Research"
               className="w-full bg-[#161920] border border-[#1e2130] rounded-lg px-4 py-2.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400/50"
             />
+          </div>
+
+          {/* Executor Type */}
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Executor Type</label>
+            <select
+              value={executorType}
+              onChange={e => setExecutorType(e.target.value as ExecutorType)}
+              className="w-full bg-[#161920] border border-[#1e2130] rounded-lg px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400/50"
+            >
+              {EXECUTOR_TYPES.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
           </div>
 
           {/* Chat thread */}
