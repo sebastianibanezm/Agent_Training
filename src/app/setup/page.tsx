@@ -6,6 +6,7 @@ import { Step2Database } from '@/components/wizard/Step2Database'
 import { Step3ApiKeys } from '@/components/wizard/Step3ApiKeys'
 import { Step4Agent } from '@/components/wizard/Step4Agent'
 import { Step5Skill } from '@/components/wizard/Step5Skill'
+import { Step6Task } from '@/components/wizard/Step6Task'
 import { useEffect, useState, Suspense } from 'react'
 
 function SetupWizard() {
@@ -34,7 +35,14 @@ function SetupWizard() {
       if (slug) sessionStorage.setItem('wizard_agent_slug', slug)
       router.push('/setup?step=5')
     }} />,
-    5: <Step5Skill onFinish={async () => {
+    5: <Step5Skill onNext={() => router.push('/setup?step=6')} />,
+    6: <Step6Task onFinish={async () => {
+      const name = sessionStorage.getItem('wizard_name') || appName
+      await fetch('/api/setup/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
       sessionStorage.removeItem('wizard_name')
       sessionStorage.removeItem('wizard_agent_slug')
       router.push('/dashboard/tasks')
@@ -42,7 +50,7 @@ function SetupWizard() {
   }
 
   return (
-    <WizardShell step={step} totalSteps={5} appTitle={appName}>
+    <WizardShell step={step} totalSteps={6} appTitle={appName}>
       {steps[step] || steps[1]}
     </WizardShell>
   )

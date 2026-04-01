@@ -5,7 +5,7 @@ import { slugify } from '@/lib/utils'
 import type { ConversationMessage } from '@/types'
 
 interface Step5SkillProps {
-  onFinish: () => Promise<void>
+  onNext: () => void
 }
 
 interface SkillSections {
@@ -15,7 +15,7 @@ interface SkillSections {
   example_output: string | null
 }
 
-export function Step5Skill({ onFinish }: Step5SkillProps) {
+export function Step5Skill({ onNext }: Step5SkillProps) {
   const [skillName, setSkillName] = useState('Company Research')
   const [description, setDescription] = useState(
     "When I'm preparing for an interview, research the target company: their recent campaigns, product launches, key competitors, and overall marketing strategy. Give me a structured brief with talking points and smart questions I can bring to the interview."
@@ -86,19 +86,11 @@ export function Step5Skill({ onFinish }: Step5SkillProps) {
       // 3. Seed default data
       await fetch('/api/setup/seed', { method: 'POST' })
 
-      await onFinish()
+      onNext()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Setup failed')
     } finally {
       setFinishing(false)
-    }
-  }
-
-  async function skip() {
-    try {
-      await onFinish()
-    } catch {
-      // navigation failure — ignore silently (router handles its own errors)
     }
   }
 
@@ -162,7 +154,7 @@ export function Step5Skill({ onFinish }: Step5SkillProps) {
 
       <div className="flex justify-between items-center">
         <button
-          onClick={skip}
+          onClick={onNext}
           className="text-xs text-slate-500 underline underline-offset-2"
         >
           Skip for now →
