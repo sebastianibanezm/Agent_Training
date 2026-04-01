@@ -10,9 +10,10 @@ type Tab = 'brainstorm' | 'execution' | 'report'
 interface TaskDetailProps {
   task: Task
   onTaskUpdate: (updated: Task) => void
+  onTaskDelete: (id: string) => void
 }
 
-export function TaskDetail({ task, onTaskUpdate }: TaskDetailProps) {
+export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps) {
   const [action, setAction] = useState<Action | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('brainstorm')
   const [loading, setLoading] = useState(true)
@@ -63,7 +64,20 @@ export function TaskDetail({ task, onTaskUpdate }: TaskDetailProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="px-6 py-4 border-b border-[#1e2130]">
-        <h2 className="text-base font-bold text-slate-100 mb-3">{task.title}</h2>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <h2 className="text-base font-bold text-slate-100 leading-snug">{task.title}</h2>
+          <button
+            onClick={async () => {
+              if (!confirm('Delete this task?')) return
+              await fetch(`/api/tasks/${task.id}`, { method: 'DELETE' })
+              onTaskDelete(task.id)
+            }}
+            className="flex-shrink-0 text-slate-600 hover:text-red-400 transition text-xs mt-0.5"
+            title="Delete task"
+          >
+            Delete
+          </button>
+        </div>
         <div className="flex gap-1">
           {tabs.filter(t => t.visible).map(tab => (
             <button

@@ -105,9 +105,11 @@ export default function TasksPage() {
       />
       <div className="flex-1 border-l border-[#1e2130]">
         {selected
-          ? <TaskDetail task={selected} onTaskUpdate={(updated) =>
-              setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))
-            } />
+          ? <TaskDetail
+              task={selected}
+              onTaskUpdate={(updated) => setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))}
+              onTaskDelete={(id) => { setTasks(prev => prev.filter(t => t.id !== id)); setSelectedId(null) }}
+            />
           : !loading && tasks.length === 0
             ? <FirstTaskPrompt onCreated={handleFirstTask} />
             : <div className="flex items-center justify-center h-full text-slate-600 text-sm">Select a task to get started</div>
