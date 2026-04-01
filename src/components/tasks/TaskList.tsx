@@ -7,9 +7,10 @@ interface TaskListProps {
   selectedId: string | null
   onSelect: (id: string) => void
   onCreate: () => void
+  agentsMap: Record<string, string>
 }
 
-export function TaskList({ tasks, selectedId, onSelect, onCreate }: TaskListProps) {
+export function TaskList({ tasks, selectedId, onSelect, onCreate, agentsMap }: TaskListProps) {
   return (
     <div className="w-[280px] flex-shrink-0 bg-[#0d0f17] flex flex-col">
       <div className="px-4 py-4 border-b border-[#1e2130] flex items-center justify-between">
@@ -31,6 +32,7 @@ export function TaskList({ tasks, selectedId, onSelect, onCreate }: TaskListProp
             task={task}
             isSelected={task.id === selectedId}
             onClick={() => onSelect(task.id)}
+            agentsMap={agentsMap}
           />
         ))}
       </div>

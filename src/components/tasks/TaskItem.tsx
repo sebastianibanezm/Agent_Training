@@ -6,9 +6,10 @@ interface TaskItemProps {
   task: Task
   isSelected: boolean
   onClick: () => void
+  agentsMap: Record<string, string>
 }
 
-export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
+export function TaskItem({ task, isSelected, onClick, agentsMap }: TaskItemProps) {
   const subText = task.status === 'brainstorming' ? 'In dialogue…'
     : task.status === 'running' ? 'Running…'
     : task.status === 'done' ? 'Completed'
@@ -17,7 +18,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-4 py-3 border-b border-[#1e2130] hover:bg-[#161920] transition ${
+      className={`w-full text-left px-4 py-3 border-b border-[#1e2130] hover:bg-[#1a1d27] transition ${
         isSelected ? 'border-l-2 border-l-cyan-400 bg-[#161920]' : 'border-l-2 border-l-transparent'
       }`}
     >
@@ -26,7 +27,7 @@ export function TaskItem({ task, isSelected, onClick }: TaskItemProps) {
         <StatusPill status={task.status} />
       </div>
       {task.agent_slug && (
-        <div className="text-[10px] text-slate-600 mt-0.5">{task.agent_slug}</div>
+        <div className="text-[10px] text-slate-600 mt-0.5">{agentsMap[task.agent_slug] ?? task.agent_slug}</div>
       )}
       {subText && (
         <div className="text-[10px] text-slate-500 mt-0.5">{subText}</div>

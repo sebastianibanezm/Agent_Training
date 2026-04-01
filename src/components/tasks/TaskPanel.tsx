@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { Action, ActionStep } from '@/types'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { Action, ActionStep, Skill } from '@/types'
 import { StepRow } from './StepRow'
 import { StepDetailPanel } from './StepDetailPanel'
 import { TaskChat } from './TaskChat'
@@ -11,6 +11,7 @@ interface TaskPanelProps {
   title: string
   action: Action
   onActionUpdated: (action: Action) => void
+  agentsMap: Record<string, string>
 }
 
 function StatusPill({ status }: { status: Action['status'] }) {
@@ -29,13 +30,15 @@ function StatusPill({ status }: { status: Action['status'] }) {
   )
 }
 
-export function TaskPanel({ title, action: initialAction, onActionUpdated }: TaskPanelProps) {
+export function TaskPanel({ title, action: initialAction, onActionUpdated, agentsMap }: TaskPanelProps) {
   const [action, setAction] = useState<Action>(initialAction)
   const [steps, setSteps] = useState<ActionStep[]>([])
   const [selectedStep, setSelectedStep] = useState<ActionStep | null>(null)
   const [logLines, setLogLines] = useState<string[]>([])
   const [showReport, setShowReport] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
+  const [skills, setSkills] = useState<Skill[]>([])
+  const skillsMap = useMemo(() => Object.fromEntries(skills.map(s => [s.slug, s.name])), [skills])
 
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const sseRef = useRef<EventSource | null>(null)
@@ -134,23 +137,25 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated }: Tas
         const result = await res.json() as { stepId: string; done: boolean }
         const { stepId, done: stepDone } = result
 
-        // Open SSE for the step that just started running
+        // Open SSE for live logs, then poll DB for step completion
         if (stepId) {
-          // Fetch fresh steps to avoid stale closure over the steps state variable
           const freshSteps = await fetchSteps()
           setSelectedStep(prev => {
             const match = freshSteps.find(s => s.id === stepId)
             return match ?? prev
           })
           openStepSSE(stepId)
-          // Wait for the SSE stream to close (step done) before firing next execute
+          // Poll DB until step is done or errored — SSE may miss events if step
+          // finishes before the EventSource connects (after() runs immediately)
           await new Promise<void>((resolve) => {
-            const check = setInterval(() => {
-              if (!sseRef.current) {
+            const check = setInterval(async () => {
+              const latest = await fetchSteps()
+              const step = latest.find(s => s.id === stepId)
+              if (step && (step.status === 'done' || step.status === 'error')) {
                 clearInterval(check)
                 resolve()
               }
-            }, 500)
+            }, 1000)
           })
         }
 
@@ -192,6 +197,11 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated }: Tas
     setAction(initialAction)
   }, [initialAction])
 
+  // Fetch skills for humanized display
+  useEffect(() => {
+    fetch('/api/skills').then(r => r.json()).then(data => { if (Array.isArray(data)) setSkills(data) })
+  }, [])
+
   // ── plan accepted ─────────────────────────────────────────────────────────
 
   const handlePlanAccepted = useCallback(async () => {
@@ -202,7 +212,8 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated }: Tas
       const fresh: Action = await res.json()
       updateAction(fresh)
     }
-  }, [action.id, fetchSteps, updateAction])
+    handleExecute()
+  }, [action.id, fetchSteps, updateAction, handleExecute])
 
   // ── step selection ────────────────────────────────────────────────────────
 
@@ -292,6 +303,8 @@ export function TaskPanel({ title, action: initialAction, onActionUpdated }: Tas
                 position={i + 1}
                 isSelected={selectedStep?.id === step.id}
                 onClick={() => handleStepClick(step)}
+                skillsMap={skillsMap}
+                agentsMap={agentsMap}
               />
             ))}
           </div>

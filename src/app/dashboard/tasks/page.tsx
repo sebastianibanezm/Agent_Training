@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { TaskList } from '@/components/tasks/TaskList'
 import { TaskDetail } from '@/components/tasks/TaskDetail'
-import type { Task } from '@/types'
+import type { Agent, Task } from '@/types'
 
 function FirstTaskPrompt({ onCreated }: { onCreated: (task: Task) => void }) {
   const [company, setCompany] = useState('')
@@ -65,14 +65,20 @@ function FirstTaskPrompt({ onCreated }: { onCreated: (task: Task) => void }) {
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const agentsMap = useMemo(() => Object.fromEntries(agents.map(a => [a.slug, a.name])), [agents])
+
   useEffect(() => {
-    fetch('/api/tasks')
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setTasks(d) })
-      .finally(() => setLoading(false))
+    Promise.all([
+      fetch('/api/tasks').then(r => r.json()),
+      fetch('/api/agents').then(r => r.json()),
+    ]).then(([tasksData, agentsData]) => {
+      if (Array.isArray(tasksData)) setTasks(tasksData)
+      if (Array.isArray(agentsData)) setAgents(agentsData)
+    }).finally(() => setLoading(false))
   }, [])
 
   const selected = tasks.find(t => t.id === selectedId) || null
@@ -102,13 +108,15 @@ export default function TasksPage() {
         selectedId={selectedId}
         onSelect={setSelectedId}
         onCreate={createTask}
+        agentsMap={agentsMap}
       />
-      <div className="flex-1 border-l border-[#1e2130]">
+      <div className="flex-1 w-0 border-l border-[#1e2130]">
         {selected
           ? <TaskDetail
               task={selected}
               onTaskUpdate={(updated) => setTasks(prev => prev.map(t => t.id === updated.id ? updated : t))}
               onTaskDelete={(id) => { setTasks(prev => prev.filter(t => t.id !== id)); setSelectedId(null) }}
+              agentsMap={agentsMap}
             />
           : !loading && tasks.length === 0
             ? <FirstTaskPrompt onCreated={handleFirstTask} />

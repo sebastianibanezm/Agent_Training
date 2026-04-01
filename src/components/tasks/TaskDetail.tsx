@@ -8,9 +8,10 @@ interface TaskDetailProps {
   task: Task
   onTaskUpdate: (updated: Task) => void
   onTaskDelete: (id: string) => void
+  agentsMap: Record<string, string>
 }
 
-export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps) {
+export function TaskDetail({ task, onTaskUpdate, onTaskDelete, agentsMap }: TaskDetailProps) {
   const [action, setAction] = useState<Action | null>(null)
   const [loading, setLoading] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -83,12 +84,13 @@ export function TaskDetail({ task, onTaskUpdate, onTaskDelete }: TaskDetailProps
       </div>
 
       {/* Panel area — relative so StepDetailPanel's absolute overlay works */}
-      <div className="flex-1 overflow-hidden relative p-4">
+      <div className="flex-1 overflow-hidden relative p-4 flex flex-col min-h-0">
         {action ? (
           <TaskPanel
             action={action}
             title={task.title}
             onActionUpdated={handleActionUpdated}
+            agentsMap={agentsMap}
           />
         ) : (
           <div className="flex items-center justify-center h-full text-slate-600 text-sm">

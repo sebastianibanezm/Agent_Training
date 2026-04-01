@@ -7,6 +7,8 @@ interface StepRowProps {
   position: number
   isSelected: boolean
   onClick: () => void
+  skillsMap: Record<string, string>
+  agentsMap: Record<string, string>
 }
 
 function StatusIcon({ status }: { status: ActionStep['status'] }) {
@@ -25,14 +27,14 @@ function StatusIcon({ status }: { status: ActionStep['status'] }) {
   return <span className="text-slate-500 text-sm">○</span>
 }
 
-export function StepRow({ step, position, isSelected, onClick }: StepRowProps) {
+export function StepRow({ step, position, isSelected, onClick, skillsMap, agentsMap }: StepRowProps) {
   return (
     <div
       onClick={onClick}
       className={`flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-[#1e2130] transition ${
         isSelected
           ? 'bg-cyan-500/5 border-l-2 border-l-cyan-400'
-          : 'hover:bg-[#1e2130]/50 border-l-2 border-l-transparent'
+          : 'hover:bg-[#1a1d27] border-l-2 border-l-transparent'
       }`}
     >
       {/* Position number */}
@@ -46,10 +48,10 @@ export function StepRow({ step, position, isSelected, onClick }: StepRowProps) {
       {/* Badges */}
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 whitespace-nowrap">
-          {step.skill_slug ?? 'none'}
+          {step.skill_slug ? (skillsMap[step.skill_slug] ?? step.skill_slug) : 'none'}
         </span>
         <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-400 border border-slate-600/30 whitespace-nowrap">
-          {step.agent_slug ?? 'unassigned'}
+          {step.agent_slug ? (agentsMap[step.agent_slug] ?? step.agent_slug) : 'unassigned'}
         </span>
       </div>
 
