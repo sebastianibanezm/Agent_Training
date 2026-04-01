@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import type { ConversationMessage } from '@/types'
+import { getAnthropicClient } from '@/lib/getAnthropicClient'
 
 const SYSTEM = `You are an AI skill designer. When given a description of what a skill should do, return ONLY a JSON object with exactly these four keys: trigger, instructions, output_format, example_output. No markdown fences, no explanation, just raw JSON.
 
 - trigger: one sentence describing when this skill activates
 - instructions: numbered step-by-step execution instructions
 - output_format: description of the shape and structure of the output
-- example_output: a short realistic example of what the output looks like`
+- example_output: a short realistic example of what the output looks like, or null if not applicable`
 
 export async function POST(req: NextRequest) {
   const { description, conversation = [] }: {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = new Anthropic()
+    const client = await getAnthropicClient()
     const messages: Anthropic.MessageParam[] = [
       ...conversation.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: description }
@@ -42,10 +42,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
     }
     // Validate shape
-    if (typeof (parsed as Record<string, unknown>).trigger !== 'string' ||
-        typeof (parsed as Record<string, unknown>).instructions !== 'string' ||
-        typeof (parsed as Record<string, unknown>).output_format !== 'string' ||
-        typeof (parsed as Record<string, unknown>).example_output !== 'string') {
+    const p = parsed as Record<string, unknown>
+    const exOut = p.example_output
+    if (typeof p.trigger !== 'string' ||
+        typeof p.instructions !== 'string' ||
+        typeof p.output_format !== 'string' ||
+        (exOut !== null && typeof exOut !== 'string')) {
       return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
     }
     return NextResponse.json(parsed)

@@ -16,8 +16,10 @@ interface SkillSections {
 }
 
 export function Step5Skill({ onFinish }: Step5SkillProps) {
-  const [skillName, setSkillName] = useState('')
-  const [description, setDescription] = useState('')
+  const [skillName, setSkillName] = useState('Company Research')
+  const [description, setDescription] = useState(
+    "When I'm preparing for an interview, research the target company: their recent campaigns, product launches, key competitors, and overall marketing strategy. Give me a structured brief with talking points and smart questions I can bring to the interview."
+  )
   const [conversation, setConversation] = useState<ConversationMessage[]>([])
   const [sections, setSections] = useState<SkillSections | null>(null)
   const [generating, setGenerating] = useState(false)
