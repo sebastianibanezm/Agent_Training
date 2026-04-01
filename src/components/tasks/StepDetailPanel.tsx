@@ -9,8 +9,6 @@ interface StepDetailPanelProps {
 }
 
 export function StepDetailPanel({ step, logLines, onClose }: StepDetailPanelProps) {
-  if (step === null) return null
-
   const logRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll log to bottom when new lines arrive
@@ -20,8 +18,11 @@ export function StepDetailPanel({ step, logLines, onClose }: StepDetailPanelProp
     }
   }, [logLines])
 
+  if (step === null) return null
+
   const isRunning = step.status === 'running'
   const isDone = step.status === 'done' || step.status === 'completed'
+  const isPending = step.status === 'pending'
 
   return (
     <div className="absolute left-0 top-0 h-full w-96 z-10 flex flex-col bg-[#0f1117] border-r border-[#1e2130] translate-x-0 transition-transform duration-200">
@@ -55,8 +56,8 @@ export function StepDetailPanel({ step, logLines, onClose }: StepDetailPanelProp
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {/* Description — always shown */}
-        {step.description && (
+        {/* Description — only shown when pending */}
+        {isPending && step.description && (
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wide mb-1">Description</p>
             <p className="text-slate-300 text-sm leading-relaxed">{step.description}</p>
