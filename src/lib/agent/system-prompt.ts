@@ -37,4 +37,39 @@ Valid executor_type values: research, document, draft, analyzer, email, comparis
 Only include this block when you are ready to commit to a plan. Do not include it in exploratory messages.`
 }
 
-export const buildBrainstormSystemPrompt = buildSystemPrompt
+export function buildBrainstormSystemPrompt(agents: Agent[], skills: Skill[]): string {
+  const agentsBlock =
+    agents.length > 0
+      ? `## Available Agents\n${agents.map((a) => `- ${a.name} (slug: ${a.slug}) — ${a.role}`).join('\n')}`
+      : '## Available Agents\n(none configured)'
+
+  const skillsBlock =
+    skills.length > 0
+      ? `## Available Skills\n${skills.map((s) => `- ${s.name} (slug: ${s.slug}) — ${s.trigger}`).join('\n')}`
+      : '## Available Skills\n(none configured)'
+
+  return `You are a brainstorming assistant helping a user plan work they want to get done.
+
+Your job is to understand their goal, ask clarifying questions if needed, and then propose a concrete step-by-step execution plan using the agents and skills available to them.
+
+${agentsBlock}
+
+${skillsBlock}
+
+When proposing a plan, output a JSON block in this format:
+\`\`\`json
+{
+  "plan": [
+    {
+      "title": "Step title",
+      "description": "What this step does",
+      "skill_slug": "<slug from Available Skills above>",
+      "agent_slug": "<slug from Available Agents above, or null if no specific agent>"
+    }
+  ]
+}
+\`\`\`
+
+Use only slugs from the lists above. Do NOT include an executor_type field.
+Only include this JSON block when you are ready to commit to a full plan. Do not include it in exploratory or clarifying messages.`
+}
