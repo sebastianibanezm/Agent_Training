@@ -7,7 +7,7 @@ import type { ConversationMessage } from '@/types'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { message } = await req.json()
+  const { message, conversation: clientConversation } = await req.json()
   const supabase = createServerClient()
 
   const { data: action } = await supabase.from('actions').select('*').eq('id', id).single()
@@ -21,7 +21,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const systemPrompt = buildBrainstormSystemPrompt(agents ?? [], skills ?? [])
 
-  const conversation: ConversationMessage[] = action.conversation || []
+  // Prefer client-provided conversation (always current) over DB read (may lag if save failed)
+  const conversation: ConversationMessage[] = clientConversation ?? action.conversation ?? []
   const updatedConversation: ConversationMessage[] = [
     ...conversation,
     { role: 'user', content: message }
@@ -54,7 +55,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           ...updatedConversation,
           { role: 'assistant', content: fullContent }
         ]
-        await supabase.from('actions').update({ conversation: finalConversation }).eq('id', id)
+        const { error: saveError } = await supabase.from('actions').update({ conversation: finalConversation }).eq('id', id)
+        if (saveError) console.error('[chat] failed to save conversation:', saveError.message)
 
         const plan = extractPlanFromConversation(finalConversation)
         const doneData = JSON.stringify({

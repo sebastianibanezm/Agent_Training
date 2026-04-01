@@ -75,7 +75,7 @@ export function TaskChat({ action, onPlanAccepted, collapsed = false, title }: T
       const res = await fetch(`/api/actions/${action.id}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, conversation: messages }),
       })
 
       if (!res.ok || !res.body) {
