@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   const { key } = await req.json()
@@ -15,6 +16,11 @@ export async function POST(req: NextRequest) {
       max_tokens: 1,
       messages: [{ role: 'user', content: 'hi' }],
     })
+
+    // Persist to settings so other routes can use it without a server restart
+    const supabase = createServerClient()
+    await supabase.from('settings').upsert({ key: 'anthropic_api_key', value: key }, { onConflict: 'key' })
+
     return NextResponse.json({ valid: true })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Invalid API key'

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
 import type { ConversationMessage } from '@/types'
+import { getAnthropicClient } from '@/lib/getAnthropicClient'
 
 const SYSTEM = `You are an AI system prompt designer. When given a description of what an agent should do, return ONLY a JSON object with exactly these three keys: role, goals, constraints. No markdown fences, no explanation, just raw JSON.
 
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = new Anthropic()
+    const client = await getAnthropicClient()
     const messages: Anthropic.MessageParam[] = [
       ...conversation.map(m => ({ role: m.role, content: m.content })),
       { role: 'user', content: description }

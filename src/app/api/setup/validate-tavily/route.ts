@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
   const { key } = await req.json()
@@ -14,6 +15,11 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ api_key: key, query: 'test', max_results: 1 }),
     })
     if (!resp.ok) throw new Error(`Tavily returned ${resp.status}: ${resp.statusText}`)
+
+    // Persist to settings so other routes can use it without a server restart
+    const supabase = createServerClient()
+    await supabase.from('settings').upsert({ key: 'tavily_api_key', value: key }, { onConflict: 'key' })
+
     return NextResponse.json({ valid: true })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Invalid Tavily key'

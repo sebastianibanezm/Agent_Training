@@ -14,12 +14,11 @@ export function Step2Database({ onNext }: Step2DatabaseProps) {
   async function validate() {
     setValidating(true)
     setError(null)
-    const name = sessionStorage.getItem('wizard_name') || ''
     try {
       const res = await fetch('/api/setup/validate-db', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({}),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Connection failed')

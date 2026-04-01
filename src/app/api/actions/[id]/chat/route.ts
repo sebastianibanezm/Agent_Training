@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { getAnthropicClient } from '@/lib/getAnthropicClient'
 import { buildBrainstormSystemPrompt } from '@/lib/agent/system-prompt'
 import { extractPlanFromConversation } from '@/lib/agent/plan-parser'
 import type { ConversationMessage } from '@/types'
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const client = new Anthropic()
+        const client = await getAnthropicClient()
         let fullContent = ''
 
         const anthropicStream = await client.messages.create({

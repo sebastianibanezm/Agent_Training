@@ -16,7 +16,9 @@ interface AgentSections {
 
 export function Step4Agent({ onNext }: Step4AgentProps) {
   const [agentName, setAgentName] = useState('The Researcher')
-  const [description, setDescription] = useState('')
+  const [description, setDescription] = useState(
+    "I want an agent that helps me prepare for marketing job interviews. It should research companies I'm applying to, find their recent campaigns and marketing strategy, identify the key people I'll meet, and help me craft smart questions and talking points that show I've done my homework."
+  )
   const [conversation, setConversation] = useState<ConversationMessage[]>([])
   const [sections, setSections] = useState<AgentSections | null>(null)
   const [generating, setGenerating] = useState(false)

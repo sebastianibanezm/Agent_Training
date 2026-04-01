@@ -1,4 +1,6 @@
 'use client'
+import { useRouter } from 'next/navigation'
+
 interface WizardShellProps {
   step: number
   totalSteps: number
@@ -7,6 +9,8 @@ interface WizardShellProps {
 }
 
 export function WizardShell({ step, totalSteps, appTitle, children }: WizardShellProps) {
+  const router = useRouter()
+
   return (
     <div className="min-h-screen bg-[#0f1117] flex items-start justify-center pt-16 px-4">
       <div className="w-full max-w-lg">
@@ -29,6 +33,16 @@ export function WizardShell({ step, totalSteps, appTitle, children }: WizardShel
             Step {step} of {totalSteps}
           </div>
           {children}
+          {step > 1 && (
+            <div className="mt-4 pt-4 border-t border-[#1e2130]">
+              <button
+                onClick={() => router.push(`/setup?step=${step - 1}`)}
+                className="text-sm text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
