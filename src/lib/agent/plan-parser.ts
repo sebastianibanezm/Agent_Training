@@ -1,9 +1,5 @@
 import type { ConversationMessage, PlanStep } from '@/types'
 
-const VALID_EXECUTOR_TYPES = new Set([
-  'research', 'document', 'draft', 'analyzer', 'email', 'comparison', 'coach', 'flashcard'
-])
-
 export function extractPlanFromConversation(
   conversation: ConversationMessage[]
 ): PlanStep[] | null {
@@ -23,11 +19,18 @@ export function extractPlanFromConversation(
     const parsed = JSON.parse(lastMatch)
     if (!Array.isArray(parsed.plan)) return null
 
-    return parsed.plan.map((step: PlanStep) => ({
-      title: step.title || 'Untitled step',
-      description: step.description || '',
-      executor_type: VALID_EXECUTOR_TYPES.has(step.executor_type) ? step.executor_type : 'draft',
-    }))
+    const steps: PlanStep[] = []
+    for (const step of parsed.plan) {
+      if (!step.skill_slug) continue  // skip malformed steps
+      steps.push({
+        title: step.title || 'Untitled step',
+        description: step.description || '',
+        skill_slug: step.skill_slug,
+        agent_slug: step.agent_slug ?? null,
+      })
+    }
+
+    return steps.length > 0 ? steps : null
   } catch {
     return null
   }
