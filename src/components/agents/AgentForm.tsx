@@ -126,7 +126,7 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Name */}
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2">
               <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
               <span className="text-[11px] font-semibold text-slate-300">Name</span>
             </div>
