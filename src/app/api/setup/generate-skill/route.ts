@@ -2,12 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { ConversationMessage } from '@/types'
 import { getAnthropicClient } from '@/lib/getAnthropicClient'
 
-const SYSTEM = `You are an AI skill designer. When given a description of what a skill should do, return ONLY a JSON object with exactly these four keys: trigger, instructions, output_format, example_output. No markdown fences, no explanation, just raw JSON.
+const SYSTEM = `You are an AI skill designer. When given a description of what a skill should do, return ONLY a JSON object with exactly these four keys: trigger, instructions, output_format, example_output. No markdown fences, no explanation, just raw JSON. All values must be strings (or null for example_output).
 
-- trigger: one sentence describing when this skill activates
-- instructions: numbered step-by-step execution instructions
-- output_format: description of the shape and structure of the output
-- example_output: a short realistic example of what the output looks like, or null if not applicable`
+Example output:
+{"trigger":"When a user asks to research a company before an interview","instructions":"1. Search for the company's recent news and campaigns\\n2. Identify key competitors and differentiators\\n3. Find the LinkedIn profiles of interviewers\\n4. Summarise findings into talking points","output_format":"A structured brief with sections: Company Overview, Recent Campaigns, Competitors, Talking Points, and Suggested Questions","example_output":"## Acme Corp Brief\\n**Recent Campaigns:** Launched 'Go Bold' rebrand in Q1...\\n**Talking Points:** Strong growth in SMB segment..."}`
 
 export async function POST(req: NextRequest) {
   const { description, conversation = [] }: {
@@ -39,18 +37,28 @@ export async function POST(req: NextRequest) {
     try {
       parsed = JSON.parse(cleaned)
     } catch {
+      console.error('[generate-skill] JSON parse failed. raw:', text)
       return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
     }
-    // Validate shape
     const p = parsed as Record<string, unknown>
-    const exOut = p.example_output
-    if (typeof p.trigger !== 'string' ||
-        typeof p.instructions !== 'string' ||
-        typeof p.output_format !== 'string' ||
-        (exOut !== null && typeof exOut !== 'string')) {
+    // Coerce arrays/objects to strings in case the model deviated
+    const coerce = (v: unknown): string | null => {
+      if (v === null || v === undefined) return null
+      if (typeof v === 'string') return v
+      if (Array.isArray(v)) return v.join('\n')
+      return JSON.stringify(v)
+    }
+    const result = {
+      trigger: coerce(p.trigger),
+      instructions: coerce(p.instructions),
+      output_format: coerce(p.output_format),
+      example_output: coerce(p.example_output),
+    }
+    if (!result.trigger || !result.instructions || !result.output_format) {
+      console.error('[generate-skill] missing required fields. parsed:', p)
       return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
     }
-    return NextResponse.json(parsed)
+    return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed'
     return NextResponse.json({ error: message }, { status: 500 })
