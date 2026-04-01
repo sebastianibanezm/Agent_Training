@@ -6,6 +6,17 @@ import { SectionContainer } from '@/components/shared/SectionContainer'
 import { ChatInput } from '@/components/shared/ChatInput'
 import { slugify } from '@/lib/utils'
 
+const EXECUTOR_DESCRIPTIONS: Record<string, string> = {
+  research:   'Searches the web and synthesizes information',
+  document:   'Creates structured documents and reports',
+  draft:      'Writes first drafts of content',
+  analyzer:   'Analyzes data, patterns, and insights',
+  email:      'Composes professional email communications',
+  comparison: 'Compares options and produces decision matrices',
+  coach:      'Provides personalized coaching and feedback',
+  flashcard:  'Creates study materials and flashcard sets',
+}
+
 interface SkillFormProps {
   skill: Skill | null
   onSave: (saved: Skill) => void
@@ -129,6 +140,11 @@ export function SkillForm({ skill, onSave, onClose }: SkillFormProps) {
                 <option key={type} value={type}>{type}</option>
               ))}
             </select>
+            {executorType && EXECUTOR_DESCRIPTIONS[executorType] && (
+              <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                {EXECUTOR_DESCRIPTIONS[executorType]}
+              </p>
+            )}
           </div>
 
           {/* Chat thread */}
