@@ -79,7 +79,10 @@ export function Step4Agent({ onNext }: Step4AgentProps) {
 
       {/* Agent name */}
       <div className="mb-4">
-        <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Agent name</label>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+          <span className="text-[11px] font-semibold text-slate-300">Agent name</span>
+        </div>
         <input
           type="text"
           value={agentName}
