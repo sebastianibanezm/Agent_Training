@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       parsed = JSON.parse(cleaned)
     } catch {
       console.error('[generate-skill] JSON parse failed. raw:', text)
-      return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to parse skill definition', debug_raw: text }, { status: 500 })
     }
     const p = parsed as Record<string, unknown>
     // Coerce arrays/objects to strings in case the model deviated
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     }
     if (!result.trigger || !result.instructions || !result.output_format) {
       console.error('[generate-skill] missing required fields. parsed:', p)
-      return NextResponse.json({ error: 'Failed to parse skill definition' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to parse skill definition', debug_parsed: p }, { status: 500 })
     }
     return NextResponse.json(result)
   } catch (err) {
