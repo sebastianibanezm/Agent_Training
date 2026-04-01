@@ -16,19 +16,51 @@ This pass addresses systemic UI/UX issues that affect every section of the app. 
 
 **Problem:** The top nav (Tasks / Agents / Skills) has no visual indication of which page is active. Users lose wayfinding context when navigating or after being redirected between sections.
 
-**File:** `src/app/dashboard/layout.tsx`
+**Files:**
+- `src/app/dashboard/layout.tsx` — extract nav into a client component
+- `src/components/shared/NavLinks.tsx` — new client component (the only new file in this pass)
 
 **Solution:**
-- Use `usePathname()` from `next/navigation` to derive the active route
-- Apply a ghost pill to the active link: `bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-md px-3 py-1`
-- Inactive links: `text-slate-400 hover:text-white transition-colors`
-- No changes to nav structure or routing
 
-**Active path matching:**
-- `/dashboard/tasks` → Tasks active
-- `/dashboard/agents` → Agents active
-- `/dashboard/skills` → Skills active
-- Use `pathname.startsWith('/dashboard/tasks')` pattern for robustness
+`dashboard/layout.tsx` is a server component (runs auth redirect). Extract the nav links into a `'use client'` child component `NavLinks` that reads `usePathname()` itself. The layout renders `<NavLinks />` with no props needed.
+
+```tsx
+// src/components/shared/NavLinks.tsx
+'use client'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+const LINKS = [
+  { href: '/dashboard/tasks', label: 'Tasks' },
+  { href: '/dashboard/agents', label: 'Agents' },
+  { href: '/dashboard/skills', label: 'Skills' },
+]
+
+export function NavLinks() {
+  const pathname = usePathname()
+  return (
+    <nav className="flex items-center gap-1">
+      {LINKS.map(({ href, label }) => {
+        const active = pathname.startsWith(href)
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={active
+              ? 'bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded-md px-3 py-1 text-sm transition-colors'
+              : 'text-slate-400 hover:text-white rounded-md px-3 py-1 text-sm transition-colors'
+            }
+          >
+            {label}
+          </Link>
+        )
+      })}
+    </nav>
+  )
+}
+```
+
+Replace the current hardcoded link list in `layout.tsx` with `<NavLinks />`.
 
 ---
 
@@ -36,58 +68,66 @@ This pass addresses systemic UI/UX issues that affect every section of the app. 
 
 **Problem:** All three sections (Tasks, Agents, Skills) show nothing when empty. No orientation, no CTA, no explanation of purpose.
 
-**Files:**
-- `src/app/dashboard/tasks/page.tsx` — render empty state when task list is empty and no task is selected
-- `src/app/dashboard/agents/page.tsx` — render empty state when agents array is empty
-- `src/app/dashboard/skills/page.tsx` — render empty state when skills array is empty
+**Tasks page — no change needed:** `tasks/page.tsx` already renders `<FirstTaskPrompt>` in the **right panel** when `tasks.length === 0 && !selectedId`. This component (a company-name input that creates an interview-prep task) already serves as the Tasks empty state. Do not replace or duplicate it.
 
-**Shared structure (inline, no new component needed):**
-```
-48px icon box: rounded-xl bg-cyan-500/8 border border-cyan-500/15
-  → centered emoji icon (section-specific)
-Headline: text-[15px] font-semibold text-slate-100 tracking-tight mt-4
-Body copy: text-sm text-slate-400 leading-relaxed mt-2 max-w-[260px] mx-auto
-CTA button: bg-cyan-500/12 text-cyan-400 border border-cyan-500/20 
-            rounded-md px-4 py-2 text-sm font-medium hover:bg-cyan-500/20 
-            transition-colors mt-5
+Empty states are only added to **Agents** and **Skills** in this pass.
+
+**Files:**
+- `src/app/dashboard/agents/page.tsx` — full-page empty state when agents array is empty
+- `src/app/dashboard/skills/page.tsx` — full-page empty state when skills array is empty
+
+**Shared structure (inline JSX, no new component):**
+```tsx
+<div className="flex flex-col items-center justify-center h-full text-center">
+  <div className="w-12 h-12 rounded-xl bg-cyan-500/8 border border-cyan-500/15 
+                  flex items-center justify-center text-xl mb-4">
+    {icon}
+  </div>
+  <h3 className="text-[15px] font-semibold text-slate-100 tracking-tight">{headline}</h3>
+  <p className="text-sm text-slate-400 leading-relaxed mt-2 max-w-[260px]">{body}</p>
+  <button
+    onClick={onCta}
+    className="mt-5 bg-cyan-500/12 text-cyan-400 border border-cyan-500/20 
+               rounded-md px-4 py-2 text-sm font-medium hover:bg-cyan-500/20 transition-colors"
+  >
+    {ctaLabel}
+  </button>
+</div>
 ```
 
 **Section-specific copy:**
 
-| Section | Icon | Headline | Body | CTA |
-|---------|------|----------|------|-----|
-| Tasks | ⚡ | Run your first agent | Tasks are jobs you give to your AI agents. Describe what you want done — your agent handles the rest. | + Create your first task |
-| Agents | 🤖 | Build your first AI agent | Agents are AI workers with a defined role and skills. Create one and give it a task to run. | + Create your first agent |
-| Skills | 🛠 | Teach your agents new skills | Skills are instructions that tell an agent how to do a specific type of work — research, writing, analysis. | + Create your first skill |
-
-**CTA behavior:** Clicking the CTA triggers the same action as the `+ New X` button in the page header (opens the creation form/panel).
-
-**Layout:** Empty state centered vertically and horizontally within the content area, `text-center`, `max-w-sm mx-auto`.
+| Section | Icon | Headline | Body | CTA | `onCta` |
+|---------|------|----------|------|-----|---------|
+| Agents | 🤖 | Build your first AI agent | Agents are AI workers with a defined role and skills. Create one and give it a task to run. | + Create your first agent | same handler as `+ New agent` button (opens AgentForm panel) |
+| Skills | 🛠️ | Teach your agents new skills | Skills are instructions that tell an agent how to do a specific type of work — research, writing, analysis. | + Create your first skill | same handler as `+ New skill` button (opens SkillForm panel) |
 
 ---
 
 ## 3. Section Labels
 
-**Problem:** `UPPERCASE TRACKING-WIDER` labels are used for every section across agent forms, skill forms, wizard steps, and task panels. Overuse creates visual noise with no resting points.
+**Problem:** `UPPERCASE TRACKING-WIDER` labels are used for every section. Overuse creates visual noise with no resting points.
 
 **Affected files:**
-- `src/components/shared/SectionContainer.tsx` — primary change (all labels rendered here)
+- `src/components/shared/SectionContainer.tsx` — primary change
 - `src/components/wizard/Step4Agent.tsx` — hardcoded labels
 - `src/components/wizard/Step5Skill.tsx` — hardcoded labels
 - `src/components/tasks/StepRow.tsx` — any section labels
 - `src/components/tasks/TaskPanel.tsx` — any hardcoded section labels
 
-**Old pattern:**
+**`SectionContainer` specifics:** The component renders a card-like container with a header row (`bg-[#161920]`, border-bottom). The label lives inside this header row. Replace the label span with the new accent-bar pattern **inside** the existing header div — do not remove the header's background or border treatment.
+
+**Old label pattern:**
 ```tsx
 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
   ROLE
 </span>
 ```
 
-**New pattern:**
+**New label pattern:**
 ```tsx
-<div className="flex items-center gap-2 mb-2">
-  <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40" />
+<div className="flex items-center gap-2">
+  <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
   <span className="text-[11px] font-semibold text-slate-300">
     Role
   </span>
@@ -97,9 +137,12 @@ CTA button: bg-cyan-500/12 text-cyan-400 border border-cyan-500/20
 **Rules:**
 - Title case (not ALL-CAPS)
 - `text-[11px] font-semibold text-slate-300`
-- Always preceded by the `w-0.5 h-3.5 rounded-full bg-cyan-400/40` accent bar
-- The accent bar and label share a flex row with `gap-2 items-center`
-- Badge (editable / auto-assigned / reference) remains after the label if present
+- Always preceded by `w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0`
+- Accent bar and label share a flex row with `gap-2 items-center`
+- Badge (`editable` / `auto-assigned` / `reference`) appears **after** the label span if present — the whole row is `flex items-center gap-2`
+- **Do not change badge shape** — keep existing `rounded-full` on badge elements; the `BADGE_STYLES` map in `SectionContainer.tsx` is unchanged
+
+**`AgentForm.tsx` labels:** The form has hardcoded `uppercase tracking-wider` labels at approximately lines 129 ("Name"), 176 ("Skills"), and 201 ("Available Tools"). Apply the same accent-bar + title-case pattern to each of these. "Available Tools" is a reference section — keep its `reference` badge style, just update the label text treatment.
 
 ---
 
@@ -111,10 +154,10 @@ CTA button: bg-cyan-500/12 text-cyan-400 border border-cyan-500/20
 
 | Use case | Old | New |
 |----------|-----|-----|
-| Badge/pill text, timestamps, metadata | `text-xs` (12px) | Keep `text-xs` |
+| Badge/pill text, timestamps, metadata | `text-xs` | Keep `text-xs` |
 | Form labels, secondary body | `text-xs` | `text-sm` (14px) |
 | Card body descriptions | `text-xs`/`text-sm` | `text-sm` (14px) |
-| Chat messages | `text-sm` | `text-sm` (keep) |
+| Chat messages | `text-sm` | Keep `text-sm` |
 | Step descriptions, task panel body | `text-sm` | `text-base` (16px) |
 | Section explainer text | `text-xs` | `text-sm` (14px) |
 
@@ -126,87 +169,142 @@ CTA button: bg-cyan-500/12 text-cyan-400 border border-cyan-500/20
 
 ## 5. Slug Humanization
 
-**Problem:** Skill and agent slugs (e.g., `web-researcher`, `draft-writer`) are shown on cards and in the task sidebar instead of human-readable names.
+**Problem:** Skill and agent slugs (e.g., `web-researcher`, `draft-writer`) appear on cards and in the task sidebar instead of human-readable names.
 
-**Affected components and fix:**
+### `AgentCard.tsx` — skill pills
 
-| Component | Current | Fix |
-|-----------|---------|-----|
-| `AgentCard.tsx` | Skill slug pills | Show `skill.name` |
-| `TaskItem.tsx` | Agent slug below title | Show `agent.name` |
-| `StepRow.tsx` | Skill slug + agent slug pills | Show `skill.name` / `agent.name` |
+`AgentCard` receives an `Agent` with `skill_slugs: string[]` — no hydrated skill objects. To show `skill.name`, `AgentsPage` must pass a `skillsMap` prop.
 
-**Data availability:** `name` is already present on all agent and skill records fetched from Supabase. This is a display-only change — no new queries needed.
+**`agents/page.tsx`:** Already fetches agents. Add a skills fetch alongside it:
+```tsx
+const [skills, setSkills] = useState<Skill[]>([])
+// fetch skills on mount alongside agents
+const skillsMap = useMemo(
+  () => Object.fromEntries(skills.map(s => [s.slug, s.name])),
+  [skills]
+)
+// pass to AgentCard:
+<AgentCard agent={agent} skillsMap={skillsMap} ... />
+```
 
-**Slug display:** Remove slug display entirely from all card and list contexts. Slugs remain in the database and are used internally (routing, API) but are not shown in the UI.
+**`AgentCard.tsx`:** Add `skillsMap: Record<string, string>` prop. Replace slug pills with:
+```tsx
+{agent.skill_slugs?.map(slug => (
+  <span key={slug} className="...">
+    {skillsMap[slug] ?? slug}
+  </span>
+))}
+```
+Fallback to slug if name not found (defensive).
+
+### `TaskItem.tsx` — agent name
+
+`TaskItem` receives a `Task` with `agent_slug: string | null`. To show `agent.name`, `TasksPage` must pass an `agentsMap` prop.
+
+**`tasks/page.tsx`:** Add agents fetch alongside tasks:
+```tsx
+const [agents, setAgents] = useState<Agent[]>([])
+const agentsMap = useMemo(
+  () => Object.fromEntries(agents.map(a => [a.slug, a.name])),
+  [agents]
+)
+// pass to TaskItem:
+<TaskItem task={task} agentsMap={agentsMap} ... />
+```
+
+**`TaskItem.tsx`:** Add `agentsMap: Record<string, string>` prop. Replace slug display with:
+```tsx
+{task.agent_slug && (
+  <span className="text-xs text-slate-500">
+    {agentsMap[task.agent_slug] ?? task.agent_slug}
+  </span>
+)}
+```
+
+### `StepRow.tsx` — skill + agent pills
+
+`StepRow` receives a `Step` with `skill_slug` and `agent_slug`. Same pattern — receive `skillsMap` and `agentsMap` props, threaded down from `TasksPage`.
+
+**Prop threading chain:** `tasks/page.tsx → TaskDetail → TaskPanel → StepRow`
+
+`TaskDetail` sits between `TasksPage` and `TaskPanel`. It currently renders `<TaskPanel task={...} ...>`. Add `skillsMap` and `agentsMap` to `TaskDetail`'s props interface and forward them to `TaskPanel`.
+
+**Updated files table for this section:**
+
+| File | Change |
+|------|--------|
+| `src/app/dashboard/agents/page.tsx` | Fetch skills, build `skillsMap`, pass to `AgentCard` |
+| `src/app/dashboard/tasks/page.tsx` | Fetch agents, build `agentsMap`, pass to `TaskItem` and `TaskDetail` |
+| `src/components/tasks/TaskDetail.tsx` | Accept + forward `skillsMap`/`agentsMap` to `TaskPanel` |
+| `src/components/agents/AgentCard.tsx` | Accept `skillsMap` prop, use names |
+| `src/components/tasks/TaskItem.tsx` | Accept `agentsMap` prop, use names |
+| `src/components/tasks/TaskPanel.tsx` | Accept + thread `skillsMap`/`agentsMap` to `StepRow` |
+| `src/components/tasks/StepRow.tsx` | Accept `skillsMap`/`agentsMap` props, use names |
 
 ---
 
 ## 6. Executor Type Tooltip
 
-**Problem:** The executor type dropdown in `SkillForm.tsx` shows options (`research`, `document`, `draft`, `analyze`, etc.) without explanation. These are opaque to non-technical users.
+**Problem:** The executor type dropdown in `SkillForm.tsx` is opaque to non-technical users.
 
 **File:** `src/components/skills/SkillForm.tsx`
 
-**Solution:** Below the executor type `<select>`, render a one-line hint that updates dynamically when the selection changes:
+**Note:** `AgentForm.tsx` already has an `EXECUTOR_DESCRIPTIONS` constant (lines 8–17) covering all 8 types. Reuse that same constant or move it to a shared location. Do not define a second incomplete copy.
 
-```tsx
-const EXECUTOR_DESCRIPTIONS: Record<string, string> = {
-  research:  "Agent will search the web and summarize findings.",
-  document:  "Agent will read and extract information from documents.",
-  draft:     "Agent will write content — emails, reports, social posts.",
-  analyze:   "Agent will review data or text and produce structured insights.",
-  plan:      "Agent will break a goal into steps and create an action plan.",
-  // add others as needed
-}
+The actual executor types from `src/types.ts`:
+```ts
+'research' | 'document' | 'draft' | 'analyzer' | 'email' | 'comparison' | 'coach' | 'flashcard'
 ```
 
-Rendered as:
+**`EXECUTOR_DESCRIPTIONS` must cover all 8 types.** Check `AgentForm.tsx` lines 8–17 for the existing descriptions. If they cover all 8, import/copy them into `SkillForm`. If any are missing, add them.
+
+**Rendered hint:**
 ```tsx
 {executorType && EXECUTOR_DESCRIPTIONS[executorType] && (
-  <p className="text-xs text-slate-500 mt-1.5">
+  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
     {EXECUTOR_DESCRIPTIONS[executorType]}
   </p>
 )}
 ```
 
-No tooltip component needed — inline hint text is sufficient and more accessible.
+No tooltip component needed — inline hint text is more accessible.
 
 ---
 
 ## 7. Hover State Consistency
 
-**Problem:** Interactive list items and cards use four different hover background values (`#161920`, `#1a1d27`, `#1e2130`, `opacity-80`), creating inconsistent tactile feedback.
+**Problem:** Interactive list items and cards use inconsistent hover values.
 
-**Standardized token:** `hover:bg-[#1a1d27]` — sits between the current card background and border color, providing clear but not jarring feedback.
+**Standardized token:** `hover:bg-[#1a1d27] transition-colors`
 
-**Affected files and their current values:**
-- `TaskItem.tsx` — `hover:bg-[#161920]` → `hover:bg-[#1a1d27]`
-- `AgentCard.tsx` — various → `hover:bg-[#1a1d27]`
-- `SkillCard.tsx` — various → `hover:bg-[#1a1d27]`
-- `StepRow.tsx` — `hover:bg-[#1e2130]/50` → `hover:bg-[#1a1d27]`
+**Affected files:**
 
-**Do not change:** Button hover states (these use semantic color tokens like `hover:bg-cyan-500/20` which are intentional).
+| File | Change |
+|------|--------|
+| `TaskItem.tsx` | Replace `hover:bg-[#161920]` → `hover:bg-[#1a1d27]` |
+| `AgentCard.tsx` | **Add** `hover:bg-[#1a1d27] transition-colors` (no current hover class on card container) |
+| `SkillCard.tsx` | Replace any existing hover class → `hover:bg-[#1a1d27]` |
+| `StepRow.tsx` | Replace `hover:bg-[#1e2130]/50` → `hover:bg-[#1a1d27]` |
+
+**Do not change:** Button hover states (`hover:bg-cyan-500/20`, `hover:bg-red-800`, etc. — these are intentional semantic tokens).
 
 ---
 
 ## Out of Scope for Pass 1
 
-The following issues are deferred to Pass 2 (Onboarding Wizard improvements):
+**Deferred to Pass 2 (Onboarding Wizard):**
 - Step 2 DB setup de-risking
-- Step 3 API key show/hide toggle
-- Step 3 failed test button state
+- Step 3 API key show/hide toggle + failed test button state
 - Steps 4/5 chat-to-sections visual connection
-- Executor type explanation in wizard context
 - "Skip" button de-emphasis
 - "Finish setup" milestone moment
 
-The following are deferred to a future Pass 3:
+**Deferred to Pass 3:**
 - CompletionReport success celebration
 - Mobile adaptation for side panels
 - Unsaved changes warning on forms
 - Task deletion from sidebar
-- Pagination for large task/agent/skill lists
+- Pagination for large lists
 
 ---
 
@@ -214,22 +312,24 @@ The following are deferred to a future Pass 3:
 
 | File | Change type |
 |------|-------------|
-| `src/app/dashboard/layout.tsx` | Add active nav indicator |
-| `src/app/dashboard/tasks/page.tsx` | Add empty state |
-| `src/app/dashboard/agents/page.tsx` | Add empty state |
-| `src/app/dashboard/skills/page.tsx` | Add empty state |
-| `src/components/shared/SectionContainer.tsx` | New label pattern |
+| `src/app/dashboard/layout.tsx` | Render `<NavLinks />` in place of hardcoded links |
+| `src/components/shared/NavLinks.tsx` | **New** — client component for active nav |
+| `src/app/dashboard/tasks/page.tsx` | Fetch agents + build `agentsMap` + pass to `TaskItem` and `TaskDetail` |
+| `src/app/dashboard/agents/page.tsx` | Full-page empty state + fetch skills + build `skillsMap` + pass to `AgentCard` |
+| `src/app/dashboard/skills/page.tsx` | Full-page empty state |
+| `src/components/shared/SectionContainer.tsx` | New label pattern + font scale |
 | `src/components/wizard/Step4Agent.tsx` | New label pattern |
 | `src/components/wizard/Step5Skill.tsx` | New label pattern |
-| `src/components/tasks/StepRow.tsx` | New label pattern + slug humanization + hover fix |
+| `src/components/tasks/StepRow.tsx` | Label pattern + slug humanization + hover fix |
 | `src/components/tasks/TaskItem.tsx` | Slug humanization + hover fix |
-| `src/components/tasks/TaskPanel.tsx` | Label pattern, font scale |
+| `src/components/tasks/TaskDetail.tsx` | Accept + forward `skillsMap`/`agentsMap` to `TaskPanel` |
+| `src/components/tasks/TaskPanel.tsx` | Accept + thread `skillsMap`/`agentsMap` to `StepRow` + font scale |
 | `src/components/agents/AgentCard.tsx` | Slug humanization + hover fix + font scale |
 | `src/components/agents/AgentForm.tsx` | Label pattern + font scale |
 | `src/components/skills/SkillCard.tsx` | Hover fix + font scale |
 | `src/components/skills/SkillForm.tsx` | Executor type tooltip |
 
-**Total files:** 14  
-**New files:** 0  
-**New components:** 0  
-**API/DB changes:** None
+**Total files:** 16 (15 modified + 1 new)  
+**New components:** 1 (`NavLinks.tsx`)  
+**API/DB changes:** None  
+**New queries:** 2 (skills fetch in agents page, agents fetch in tasks page) — both are simple `SELECT *` fetches using the existing Supabase client pattern
