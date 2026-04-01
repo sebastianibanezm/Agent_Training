@@ -43,13 +43,14 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
 
   // ── helpers ───────────────────────────────────────────────────────────────
 
-  const fetchSteps = useCallback(async () => {
+  const fetchSteps = useCallback(async (): Promise<ActionStep[]> => {
     const res = await fetch(`/api/actions/${action.id}/steps`)
-    if (!res.ok) return
-    const data: ActionStep[] = await res.json()
+    if (!res.ok) return []
+    const data = await res.json() as ActionStep[]
     setSteps(data)
     // Keep selectedStep in sync with fresh data
     setSelectedStep(prev => prev ? (data.find(s => s.id === prev.id) ?? null) : null)
+    return data
   }, [action.id])
 
   const updateAction = useCallback((updated: Action) => {
@@ -94,10 +95,12 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
 
     es.onmessage = (e) => {
       try {
-        const event = JSON.parse(e.data)
-        if (event.type === 'log') {
-          setLogLines(prev => [...prev, event.content])
-        } else if (event.type === 'done' || event.type === 'error') {
+        const raw = JSON.parse(e.data) as { type?: string; content?: string }
+        const eventType = raw.type ?? ''
+        const content = raw.content ?? ''
+        if (eventType === 'log') {
+          setLogLines(prev => [...prev, content])
+        } else if (eventType === 'done' || eventType === 'error') {
           es.close()
           sseRef.current = null
           fetchSteps()
@@ -127,14 +130,15 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
         const res = await fetch(`/api/actions/${action.id}/execute`, { method: 'POST' })
         if (!res.ok) break
 
-        const { stepId, done: stepDone } = await res.json()
+        const result = await res.json() as { stepId: string; done: boolean }
+        const { stepId, done: stepDone } = result
 
         // Open SSE for the step that just started running
         if (stepId) {
-          // Update selectedStep so the panel shows immediately
+          // Fetch fresh steps to avoid stale closure over the steps state variable
+          const freshSteps = await fetchSteps()
           setSelectedStep(prev => {
-            const currentSteps = steps
-            const match = currentSteps.find(s => s.id === stepId)
+            const match = freshSteps.find(s => s.id === stepId)
             return match ?? prev
           })
           openStepSSE(stepId)
@@ -155,7 +159,7 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
       setIsExecuting(false)
       fetchSteps()
     }
-  }, [isExecuting, action, updateAction, startPolling, steps, openStepSSE, fetchSteps])
+  }, [isExecuting, action, updateAction, startPolling, openStepSSE, fetchSteps])
 
   // ── lifecycle ─────────────────────────────────────────────────────────────
 
@@ -309,7 +313,7 @@ export function TaskPanel({ action: initialAction, onActionUpdated }: TaskPanelP
       )}
 
       {/* Completion Report modal */}
-      {showReport && (
+      {showReport && action.status === 'done' && (
         <CompletionReport
           action={action}
           steps={steps}
