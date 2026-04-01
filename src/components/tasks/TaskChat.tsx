@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { Action, ConversationMessage } from '@/types'
 
 interface TaskChatProps {
@@ -187,8 +189,26 @@ export function TaskChat({ action, onPlanAccepted, collapsed = false, title }: T
                 {msg.content}
               </div>
             ) : (
-              <div className="max-w-[85%] text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
-                {msg.content}
+              <div className="max-w-[85%] rounded-xl px-4 py-3 text-sm bg-[#1e2130] border border-[#2a2d3a] text-slate-200 leading-relaxed prose prose-invert prose-sm max-w-none">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="text-slate-200">{children}</li>,
+                    strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                    code: ({ children }) => <code className="bg-[#0f1117] text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{children}</code>,
+                    pre: ({ children }) => <pre className="bg-[#0f1117] rounded-lg p-3 overflow-x-auto mb-2 text-xs font-mono">{children}</pre>,
+                    h1: ({ children }) => <h1 className="text-base font-semibold text-white mb-2">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-sm font-semibold text-white mb-1.5">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-sm font-medium text-slate-100 mb-1">{children}</h3>,
+                    blockquote: ({ children }) => <blockquote className="border-l-2 border-cyan-500/40 pl-3 text-slate-400 italic mb-2">{children}</blockquote>,
+                    hr: () => <hr className="border-[#2a2d3a] my-3" />,
+                  }}
+                >
+                  {msg.content}
+                </ReactMarkdown>
               </div>
             )}
           </div>
