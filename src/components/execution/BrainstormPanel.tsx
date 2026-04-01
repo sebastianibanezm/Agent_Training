@@ -16,10 +16,21 @@ export function BrainstormPanel({ action, task, onPlanAccepted }: BrainstormPane
   const [stepCount, setStepCount] = useState(0)
   const [accepting, setAccepting] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const autoSentRef = useRef(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Auto-send task title as the opening message when the conversation is brand new
+  useEffect(() => {
+    if (autoSentRef.current) return
+    if ((action.conversation || []).length === 0 && task.title) {
+      autoSentRef.current = true
+      sendMessage(task.title)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function sendMessage(text: string) {
     const userMsg: ConversationMessage = { role: 'user', content: text }
