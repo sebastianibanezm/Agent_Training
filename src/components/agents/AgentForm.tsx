@@ -126,7 +126,10 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           {/* Name */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Name</label>
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+              <span className="text-[11px] font-semibold text-slate-300">Name</span>
+            </div>
             <input
               type="text"
               value={name}
@@ -173,7 +176,10 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
 
           {/* Skills picker */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Skills</label>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+              <span className="text-[11px] font-semibold text-slate-300">Skills</span>
+            </div>
             {skillsError ? (
               <p className="text-xs text-red-400">Could not load skills</p>
             ) : skills.length === 0 ? (
@@ -198,10 +204,11 @@ export function AgentForm({ agent, onSave, onClose }: AgentFormProps) {
 
           {/* Tools reference */}
           <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
-              Available Tools{' '}
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-0.5 h-3.5 rounded-full bg-cyan-400/40 flex-shrink-0" />
+              <span className="text-[11px] font-semibold text-slate-300">Available Tools</span>
               <span className="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-900">reference</span>
-            </label>
+            </div>
             <div className="space-y-1">
               {Object.entries(EXECUTOR_DESCRIPTIONS).map(([type, desc]) => (
                 <div key={type} className="flex gap-2 text-xs">
