@@ -7,19 +7,20 @@ import { AgentTriggerModal } from './AgentTriggerModal'
 
 interface AgentCardProps {
   agent: Agent
+  skillsMap: Record<string, string>
   onEdit: () => void
   onDelete: () => void
   onTaskCreated: () => void
 }
 
-export function AgentCard({ agent, onEdit, onDelete, onTaskCreated }: AgentCardProps) {
+export function AgentCard({ agent, skillsMap, onEdit, onDelete, onTaskCreated }: AgentCardProps) {
   const [showDelete, setShowDelete] = useState(false)
   const [showTrigger, setShowTrigger] = useState(false)
   const router = useRouter()
 
   return (
     <>
-      <div className="bg-[#161920] border border-[#1e2130] rounded-xl p-4 flex flex-col gap-3">
+      <div className="bg-[#161920] border border-[#1e2130] rounded-xl p-4 flex flex-col gap-3 hover:bg-[#1a1d27] transition-colors">
         <div className="flex items-start justify-between">
           <h3 className="text-sm font-bold text-white">{agent.name}</h3>
           <div className="flex gap-1">
@@ -33,21 +34,21 @@ export function AgentCard({ agent, onEdit, onDelete, onTaskCreated }: AgentCardP
         </div>
 
         {agent.role && (
-          <p className="text-xs text-slate-400 line-clamp-1">{agent.role}</p>
+          <p className="text-sm text-slate-400 line-clamp-1">{agent.role}</p>
         )}
 
         {agent.goals && (
-          <p className="text-xs text-slate-500 line-clamp-2">{agent.goals}</p>
+          <p className="text-sm text-slate-500 line-clamp-2">{agent.goals}</p>
         )}
 
-        {/* Skill chips */}
+        {/* Skill chips — show human name, fall back to slug if not in map */}
         <div className="flex flex-wrap gap-1.5">
           {(agent.skill_slugs || []).length === 0 ? (
-            <span className="text-[10px] text-slate-600">No skills assigned</span>
+            <span className="text-xs text-slate-600">No skills assigned</span>
           ) : (
             (agent.skill_slugs || []).map(slug => (
-              <span key={slug} className="text-[10px] font-medium bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
-                {slug}
+              <span key={slug} className="text-xs font-medium bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">
+                {skillsMap[slug] ?? slug}
               </span>
             ))
           )}
